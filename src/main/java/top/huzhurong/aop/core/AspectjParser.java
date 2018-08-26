@@ -63,10 +63,10 @@ public class AspectjParser {
                     }
                 }
             }else if (advisor instanceof AfterAdvisor){
-                AfterAdvisor beforeAdvisor = (AfterAdvisor) advisor;
+                AfterAdvisor afterAdvisor = (AfterAdvisor) advisor;
                 Method[] declaredMethods = object.getClass().getDeclaredMethods();
                 for (Method declaredMethod : declaredMethods) {
-                    if (declaredMethod.getName().equals(beforeAdvisor.getPointCut())) {
+                    if (declaredMethod.getName().equals(afterAdvisor.getPointCut())) {
                         advisorsList.add(advisor);
                     }
                 }

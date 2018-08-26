@@ -39,10 +39,18 @@ public class CglibInvocation implements Invocation {
         Advisor advisor = advisors.get(++InvocationIndex);
         if (advisor instanceof BeforeAdvisor) {
             BeforeAdvisor beforeAdvisor = (BeforeAdvisor) advisor;
-            return beforeAdvisor.invoke(this);
+            if (beforeAdvisor.getPointCut().equals(this.method.getName())) {
+                return beforeAdvisor.invoke(this);
+            } else {
+                return proceed();
+            }
         } else if (advisor instanceof AfterAdvisor) {
             AfterAdvisor afterAdvisor = (AfterAdvisor) advisor;
-            return afterAdvisor.invoke(this);
+            if (afterAdvisor.getPointCut().equals(this.method.getName())) {
+                return afterAdvisor.invoke(this);
+            } else {
+                return proceed();
+            }
         } else {
             return proceed();
         }
