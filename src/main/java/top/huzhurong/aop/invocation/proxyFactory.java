@@ -15,7 +15,7 @@ public class proxyFactory {
     public static  <T> T createProxy(Class<T> tClass, List<Advisor> advisors) {
         Enhancer enhancer = new Enhancer();
         enhancer.setCallback((MethodInterceptor) (object, method, args, methodProxy) ->
-                (Invocation) new CglibInvocation(object, method, args, methodProxy, advisors).proceed());
+                 new CglibInvocation(object, method, args, methodProxy, advisors).proceed());
         enhancer.setCallbackFilter(method -> 0);
         enhancer.setSuperclass(tClass);
         return (T) enhancer.create();

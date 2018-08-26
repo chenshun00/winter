@@ -8,7 +8,7 @@ public class Bin {
     public void info2(){
         System.out.println("bin");
     }
-    public void other(){
-        System.out.println("other");
+    public String other(){
+        return "other";
     }
 }

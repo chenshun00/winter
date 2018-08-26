@@ -20,7 +20,8 @@ public class TestUse {
         Bin bin = new Bin();
         //3、后置处理判断bin是不是满足拦截要求
         Bin binProxy = (Bin) AspectjParser.findApplyAdvisor(bin, advisors);
-        binProxy.other();
+        System.out.println(binProxy.other());
+//        binProxy.info2();
         //
     }
 }

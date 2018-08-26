@@ -2,8 +2,10 @@ package top.huzhurong.aop.core;
 
 import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.AfterAdvisor;
+import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 import top.huzhurong.aop.annotation.After;
+import top.huzhurong.aop.annotation.Around;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.annotation.Before;
 import top.huzhurong.aop.invocation.proxyFactory;
@@ -47,6 +49,16 @@ public class AspectjParser {
                 afterAdvisor.setPointCut(pointCut);
                 advisors.add(afterAdvisor);
             }
+            Around around = (Around) findAAnnotationInUse(declaredMethod, Around.class);
+            if (around != null) {
+                String pointCut = around.value();
+                AroundAdvisor aroundAdvisor = new AroundAdvisor();
+                aroundAdvisor.setObject(aClass.newInstance());
+                aroundAdvisor.setMethod(declaredMethod);
+                aroundAdvisor.setPointCut(pointCut);
+                aroundAdvisor.setArgs(declaredMethod.getParameterCount());
+                advisors.add(aroundAdvisor);
+            }
         }
         return advisors;
     }
@@ -62,11 +74,19 @@ public class AspectjParser {
                         advisorsList.add(advisor);
                     }
                 }
-            }else if (advisor instanceof AfterAdvisor){
+            } else if (advisor instanceof AfterAdvisor) {
                 AfterAdvisor afterAdvisor = (AfterAdvisor) advisor;
                 Method[] declaredMethods = object.getClass().getDeclaredMethods();
                 for (Method declaredMethod : declaredMethods) {
                     if (declaredMethod.getName().equals(afterAdvisor.getPointCut())) {
+                        advisorsList.add(advisor);
+                    }
+                }
+            }else if (advisor instanceof AroundAdvisor) {
+                AroundAdvisor aroundAdvisor = (AroundAdvisor) advisor;
+                Method[] declaredMethods = object.getClass().getDeclaredMethods();
+                for (Method declaredMethod : declaredMethods) {
+                    if (declaredMethod.getName().equals(aroundAdvisor.getPointCut())) {
                         advisorsList.add(advisor);
                     }
                 }

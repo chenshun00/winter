@@ -4,6 +4,7 @@ import lombok.Data;
 import net.sf.cglib.proxy.MethodProxy;
 import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.AfterAdvisor;
+import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 
 import java.lang.reflect.Method;
@@ -48,6 +49,13 @@ public class CglibInvocation implements Invocation {
             AfterAdvisor afterAdvisor = (AfterAdvisor) advisor;
             if (afterAdvisor.getPointCut().equals(this.method.getName())) {
                 return afterAdvisor.invoke(this);
+            } else {
+                return proceed();
+            }
+        }else if (advisor instanceof AroundAdvisor) {
+            AroundAdvisor aroundAdvisor = (AroundAdvisor) advisor;
+            if (aroundAdvisor.getPointCut().equals(this.method.getName())) {
+                return aroundAdvisor.invoke(this);
             } else {
                 return proceed();
             }
