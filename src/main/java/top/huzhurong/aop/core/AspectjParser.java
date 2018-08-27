@@ -92,7 +92,12 @@ public class AspectjParser {
                 }
             }
         }
-        return proxyFactory.createProxy(object.getClass(), advisorsList);
+        try {
+            return proxyFactory.createJdkProxy(object.getClass(), advisorsList);
+        } catch (IllegalAccessException | InstantiationException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static boolean findAAnnotation(Class<?> targetClass, Class<? extends Annotation> annotation) {

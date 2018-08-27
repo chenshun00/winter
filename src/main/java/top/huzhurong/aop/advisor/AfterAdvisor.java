@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import top.huzhurong.aop.invocation.CglibInvocation;
 import top.huzhurong.aop.invocation.Invocation;
+import top.huzhurong.aop.invocation.JdkInvocation;
 
 import java.lang.reflect.Method;
 
@@ -31,6 +32,10 @@ public class AfterAdvisor implements MethodIntecepter {
                 CglibInvocation cglibInvocation = (CglibInvocation) invocation;
                 method.setAccessible(true);
                 method.invoke(object, cglibInvocation.getArgs());
+            }else if (invocation instanceof JdkInvocation){
+                JdkInvocation jdkInvocation = (JdkInvocation) invocation;
+                method.setAccessible(true);
+                method.invoke(object, jdkInvocation.getArgs());
             }
         }
     }

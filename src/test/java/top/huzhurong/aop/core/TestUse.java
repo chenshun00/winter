@@ -20,8 +20,19 @@ public class TestUse {
         Bin bin = new Bin();
         //3、后置处理判断bin是不是满足拦截要求
         Bin binProxy = (Bin) AspectjParser.findApplyAdvisor(bin, advisors);
+        assert binProxy != null;
         System.out.println(binProxy.other());
 //        binProxy.info2();
         //
+    }
+
+
+    @Test
+    public void jdkTest() throws InstantiationException, IllegalAccessException {
+        List<Advisor> advisors = AspectjParser.parserAspectj(TestAspectj3.class);
+        TestIn testIn = new TestInImpl();
+        TestIn testInProxy = (TestIn) AspectjParser.findApplyAdvisor(testIn, advisors);
+        assert testInProxy != null;
+        testInProxy.doInfo();
     }
 }
