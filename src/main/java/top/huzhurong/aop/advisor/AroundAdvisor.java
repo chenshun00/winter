@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
-public class AroundAdvisor implements MethodIntecepter {
+public class AroundAdvisor implements MethodInterceptor {
 
     @Getter
     @Setter

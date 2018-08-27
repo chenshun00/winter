@@ -24,9 +24,12 @@ import java.util.List;
 public class AspectjParser {
 
     public static List<Advisor> parserAspectj(Class<?> aClass) throws IllegalAccessException, InstantiationException {
-        if (aClass == null || !findAAnnotation(aClass, Aspectj.class))
+        if (aClass == null) {
             throw new NullPointerException();
-
+        }
+        if (!findAAnnotation(aClass, Aspectj.class)) {
+            return new LinkedList<>();
+        }
         Method[] declaredMethods = aClass.getDeclaredMethods();
         List<Advisor> advisors = new LinkedList<Advisor>();
         for (Method declaredMethod : declaredMethods) {
@@ -82,7 +85,7 @@ public class AspectjParser {
                         advisorsList.add(advisor);
                     }
                 }
-            }else if (advisor instanceof AroundAdvisor) {
+            } else if (advisor instanceof AroundAdvisor) {
                 AroundAdvisor aroundAdvisor = (AroundAdvisor) advisor;
                 Method[] declaredMethods = object.getClass().getDeclaredMethods();
                 for (Method declaredMethod : declaredMethods) {

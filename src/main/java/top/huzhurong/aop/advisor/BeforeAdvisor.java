@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
-public class BeforeAdvisor implements MethodIntecepter {
+public class BeforeAdvisor implements MethodInterceptor {
 
     //链接点
     private String pointCut;

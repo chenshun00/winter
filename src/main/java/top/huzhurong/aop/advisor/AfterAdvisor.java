@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
-public class AfterAdvisor implements MethodIntecepter {
+public class AfterAdvisor implements MethodInterceptor {
     @Getter
     @Setter
     private String pointCut;
