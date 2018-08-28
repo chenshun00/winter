@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class proxyFactory {
     @SuppressWarnings("unchecked")
-    public static <T> T createProxy(Class<T> tClass, List<Advisor> advisors) {
+    private static <T> T createProxy(Class<T> tClass, List<Advisor> advisors) {
         Enhancer enhancer = new Enhancer();
         enhancer.setCallback((MethodInterceptor) (object, method, args, methodProxy) ->
                 new CglibInvocation(object, method, args, methodProxy, advisors).proceed());
@@ -23,10 +23,26 @@ public class proxyFactory {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T createJdkProxy(Class<T> tClass, List<Advisor> advisors) throws IllegalAccessException, InstantiationException {
+    private static <T> T createJdkProxy(Class<T> tClass, List<Advisor> advisors) throws IllegalAccessException, InstantiationException {
         ClassLoader classLoader = tClass.getClassLoader();
         JdkProxy jdkProxy = new JdkProxy(tClass.newInstance(), advisors);
         Object target = Proxy.newProxyInstance(classLoader, tClass.getInterfaces(), jdkProxy);
         return (T) target;
+    }
+
+    public static <T> T newProxy(Class<T> aClass, List<Advisor> advisorsList) {
+
+        if (aClass.getInterfaces().length == 0 && aClass.getSuperclass().equals(Object.class)) {
+            return createProxy(aClass, advisorsList);
+        } else if (aClass.getInterfaces().length != 0) {
+            try {
+                return createJdkProxy(aClass, advisorsList);
+            } catch (IllegalAccessException | InstantiationException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            throw new RuntimeException(aClass + " 不能被cglib或者jdk代理!");
+        }
     }
 }
