@@ -33,6 +33,6 @@ public class TestUse {
         TestIn testIn = new TestInImpl();
         TestIn testInProxy = (TestIn) AspectjParser.findApplyAdvisor(testIn, advisors);
         assert testInProxy != null;
-        testInProxy.doInfo();
+        System.out.println(testInProxy.doInfo());
     }
 }

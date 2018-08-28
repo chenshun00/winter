@@ -3,6 +3,9 @@ package top.huzhurong.aop.core;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.lang.reflect.Method;
+import java.util.Date;
+
 /**
  * @author luobo.cs@raycloud.com
  * @since 2018/8/28
@@ -28,5 +31,19 @@ public class ClassTest {
         TestIn testIn = new TestInImpl();
         Class<?>[] interfaces = testIn.getClass().getInterfaces();
         Assert.assertEquals(interfaces.length, 1);
+    }
+
+    @Test
+    public void testMethodParam() throws NoSuchMethodException {
+        TestParam testParam = new TestParam();
+        Method test = testParam.getClass().getDeclaredMethod("test",String.class,Integer.class,Date.class);
+        Assert.assertNotNull(test);
+        Assert.assertEquals(3,test.getParameterCount());
+    }
+
+    private class TestParam{
+        public String test(String name, Integer age, Date birthday){
+            return "test";
+        }
     }
 }

@@ -5,5 +5,5 @@ package top.huzhurong.aop.core;
  * @since 2018/8/27
  */
 public interface TestIn {
-    void doInfo();
+    String doInfo();
 }
