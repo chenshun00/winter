@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import top.huzhurong.aop.invocation.CglibInvocation;
 import top.huzhurong.aop.invocation.Invocation;
+import top.huzhurong.aop.invocation.JdkInvocation;
 
 import java.lang.reflect.Method;
 
@@ -30,7 +31,7 @@ public class AroundAdvisor implements MethodInterceptor {
 
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
-        if (invocation instanceof CglibInvocation) {
+        if (invocation instanceof CglibInvocation || invocation instanceof JdkInvocation) {
             method.setAccessible(true);
             if (args == 0) {
                 return method.invoke(object);

@@ -31,7 +31,6 @@ public class proxyFactory {
     }
 
     public static <T> T newProxy(Class<T> aClass, List<Advisor> advisorsList) {
-
         if (aClass.getInterfaces().length == 0 && aClass.getSuperclass().equals(Object.class)) {
             return createProxy(aClass, advisorsList);
         } else if (aClass.getInterfaces().length != 0) {
