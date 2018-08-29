@@ -6,6 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * 前置
+ *
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
