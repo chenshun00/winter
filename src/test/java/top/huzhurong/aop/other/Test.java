@@ -1,5 +1,6 @@
 package top.huzhurong.aop.other;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -7,6 +8,7 @@ import lombok.Data;
  * @since 2018/9/1
  */
 @Data
+@Builder
 public class Test {
     private Integer id;
     private String name;

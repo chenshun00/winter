@@ -2,7 +2,10 @@ package top.huzhurong.aop.other;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import top.huzhurong.aop.advisor.transaction.manager.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,10 +23,12 @@ public class DruidTest {
     private static final String user = "root";
     private static final String password = "chenshun";
 
+    private DruidDataSource druidDataSource;
+    private TestDao testDao;
 
-    @Test
-    public void testDruidUsage() throws SQLException {
-        DruidDataSource druidDataSource = new DruidDataSource();
+    @Before
+    public void before() {
+        druidDataSource = new DruidDataSource();
         druidDataSource.setMaxActive(10);
         druidDataSource.setUrl(url);
         druidDataSource.setUsername(user);
@@ -32,7 +37,10 @@ public class DruidTest {
         druidDataSource.setTestOnBorrow(false);
         druidDataSource.setTestOnReturn(false);
         druidDataSource.setTestWhileIdle(true);
+    }
 
+    @Test
+    public void testDruidUsage() throws SQLException {
         Connection connection = druidDataSource.getConnection();
         PreparedStatement preparedStatement = connection.prepareStatement("select * from test where id = ?");
         //first parameter is 1, the second tis 2
@@ -44,5 +52,39 @@ public class DruidTest {
             int age = resultSet.getInt(3);
             log.info("id:{},name:{},age:{}", id, name, age);
         }
+    }
+
+    @Test
+    public void testTestDao() throws SQLException {
+        ConnectionManager connectionManager = new ConnectionManager();
+        try {
+            testDao = new TestDao();
+            connectionManager.setNewConnection(true);
+            Connection connection = druidDataSource.getConnection();
+            connection.setAutoCommit(false);
+            connectionManager.setConnection(connection);
+            ConnectionManager.setConnectionThreadLocal(connectionManager);
+
+            top.huzhurong.aop.other.Test tt = top.huzhurong.aop.other.Test.builder().age(100).id(2).name("test").build();
+            Integer test = testDao.addTest(tt);
+            Assert.assertEquals(1, (int) test);
+            top.huzhurong.aop.other.Test testById = testDao.getTestById(tt.getId());
+            log.debug("第一次查询:{}", testById);
+            Assert.assertNotNull(testById);
+            Assert.assertEquals(tt.getName(), testById.getName());
+
+            tt.setName("test3");
+            Integer integer = testDao.updatetestById(tt);
+            Assert.assertEquals(1, (int) integer);
+            testById = testDao.getTestById(tt.getId());
+            log.debug("第二次查询:{}", testById);
+        } catch (SQLException sql) {
+            connectionManager.getConnection().rollback();
+            log.info("事务回滚");
+            sql.printStackTrace();
+            System.exit(2);
+        }
+        connectionManager.getConnection().commit();
+        log.info("事务提交");
     }
 }
