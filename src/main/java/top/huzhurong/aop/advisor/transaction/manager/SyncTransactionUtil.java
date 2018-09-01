@@ -50,7 +50,8 @@ public class SyncTransactionUtil {
         currentTransactionActive.set(false);
     }
 
-    public static void setStatus(Integer level, boolean active, boolean readOnly) {
+    public static void setStatus(TransactionStatus status, Integer level, boolean active, boolean readOnly) {
+        statusThreadLocal.set(status);
         currentTransactionActive.set(active);
         currentTransactionIsolationLevel.set(level);
         currentTransactionReadOnly.set(readOnly);
