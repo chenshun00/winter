@@ -12,6 +12,7 @@ public interface TransactionDefinition {
 
     int ISOLATION_READ_UNCOMMITTED = Connection.TRANSACTION_REPEATABLE_READ;
 
+
     int TIMEOUT_DEFAULT = -1;
 
     int getPropagationBehavior();

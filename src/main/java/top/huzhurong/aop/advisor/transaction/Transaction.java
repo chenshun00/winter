@@ -17,7 +17,7 @@ public class Transaction {
         return ConnectionManager;
     }
 
-    public void setConnection(ConnectionManager connectionManager) {
+    public void setConnectionManager(ConnectionManager connectionManager) {
         this.ConnectionManager = ConnectionManager;
     }
 

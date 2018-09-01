@@ -7,6 +7,7 @@ import top.huzhurong.aop.advisor.transaction.manager.TransactionIntercepter;
 import top.huzhurong.aop.invocation.Invocation;
 
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 
 /**
  * 事务增强器
@@ -31,7 +32,7 @@ public class TransactionAdvisor implements MethodInterceptor {
     private TransactionIntercepter transactionIntercepter = new TransactionIntercepter();
 
     @Override
-    public Object invoke(Invocation invocation) {
-        return transactionIntercepter.doTransaction(invocation,method,object,args);
+    public Object invoke(Invocation invocation) throws Throwable {
+        return transactionIntercepter.doTransaction(invocation, method, object, args);
     }
 }

@@ -13,6 +13,12 @@ import java.util.Objects;
  */
 public class TransactionAttrSource {
 
+    /**
+     * 解析方法上的 @Transactional 注解，获取传播行为，隔离级别，事务超时等信息
+     *
+     * @param method 执行的方法
+     * @return TransactionDefinition 事务信息
+     */
     public static TransactionDefinition getDefinition(Method method) {
         Transactional transactional = Objects.requireNonNull(method).getDeclaredAnnotation(Transactional.class);
         TransactionDefinition definition = new DefaultTransactionDefinition();

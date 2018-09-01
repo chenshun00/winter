@@ -1,5 +1,7 @@
 package top.huzhurong.aop.advisor.transaction.manager;
 
+import lombok.Getter;
+import lombok.Setter;
 import top.huzhurong.aop.advisor.transaction.Transaction;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.definition.DefaultTransactionStatus;
@@ -20,34 +22,55 @@ import java.sql.Statement;
 public class JdbcTransactionManager implements TransactionManager {
 
     @Override
-    public TransactionStatus getTransaction(TransactionDefinition definition) {
+    public TransactionStatus getTransaction(TransactionDefinition definition) throws SQLException {
+
+        Transaction transaction = doGetTransaction();
         //当前上下文是否有事务
         if (SyncTransactionUtil.isSynchronizationActive()) {
             //处理存在的事务
-            return handleExistTransaction(definition);
+            return handleExistTransaction(definition, transaction);
         }
-        Transaction newTransaction = getNewTransaction();
         //上下文没有事务
-        TransactionStatus transactionStatus = new DefaultTransactionStatus(newTransaction, false, false);
+        TransactionStatus transactionStatus = new DefaultTransactionStatus(transaction, false, false);
         //事务绑定
-        begin(newTransaction, definition);
+        begin(transaction, definition);
         bindToThread(transactionStatus, definition);
         return transactionStatus;
+    }
+
+    private Transaction doGetTransaction() throws SQLException {
+        TransactionStatus transactionStatus = SyncTransactionUtil.getTransactionStatus();
+        if (transactionStatus != null) {
+            DefaultTransactionStatus status = (DefaultTransactionStatus) transactionStatus;
+            Transaction transaction = (Transaction) status.getTransaction();
+            transaction.setNewTransaction(false);
+            transaction.setActive(true);
+            return transaction;
+        } else {
+            Transaction transaction = new Transaction();
+            transaction.setActive(true);
+            transaction.setNewTransaction(true);
+            ConnectionManager connectionManager = new ConnectionManager();
+            Connection connection = this.dataSource.getConnection();
+            connectionManager.setConnection(connection);
+            connectionManager.setNewConnection(true);
+            ConnectionManager.setConnectionThreadLocal(connectionManager);
+            transaction.setConnectionManager(connectionManager);
+            return transaction;
+        }
     }
 
     private void bindToThread(TransactionStatus transactionStatus, TransactionDefinition definition) {
         SyncTransactionUtil.setStatus(transactionStatus, definition.getIsolationLevel(), true, definition.isReadOnly());
     }
 
+    /**
+     * @param transaction 当前事务
+     * @param definition  定义好的事务数据
+     */
     private void begin(Transaction transaction, TransactionDefinition definition) {
         try {
-
-            ConnectionManager connectionManager = new ConnectionManager();
-            Connection connection = this.dataSource.getConnection();
-            connectionManager.setConnection(connection);
-            connectionManager.setNewConnection(true);
-            ConnectionManager.setConnectionThreadLocal(connectionManager);
-            transaction.setConnection(connectionManager);
+            Connection connection = transaction.getConnection().getConnection();
             if (definition.isReadOnly()) {
                 connection.setReadOnly(true);
                 Statement statement = connection.createStatement();
@@ -62,30 +85,20 @@ public class JdbcTransactionManager implements TransactionManager {
 
     }
 
-    /**
-     * 获取一个新的 Transaction 标记，本身没有做什么用，只是用于标记当前事务激活
-     */
-    private Transaction getNewTransaction() {
-        Transaction transaction = new Transaction();
-        transaction.setActive(true);
-        transaction.setNewTransaction(true);
-        return transaction;
-    }
-
-    private TransactionStatus handleExistTransaction(TransactionDefinition definition) {
-
-        Transaction transaction = new Transaction();
-        return new DefaultTransactionStatus(transaction, false, false);
+    private TransactionStatus handleExistTransaction(TransactionDefinition definition, Transaction transaction) {
+        begin(transaction, definition);
+        //暂时不考虑事务的传播行为，即一致当成required处理
+        return SyncTransactionUtil.getTransactionStatus();
     }
 
     @Override
-    public void commit(TransactionStatus status) {
+    public void commit(TransactionStatus status) throws SQLException {
         if (status.isCompleted()) {
             throw new IllegalStateException("the transaction has bean commit");
         }
         DefaultTransactionStatus defStatus = (DefaultTransactionStatus) status;
         if (defStatus.isLocalRollbackOnly()) {
-            processRollback(defStatus, false);
+            processRollback(defStatus);
             return;
         }
         processCommit(defStatus);
@@ -102,31 +115,21 @@ public class JdbcTransactionManager implements TransactionManager {
         }
     }
 
-    private void processRollback(DefaultTransactionStatus defStatus, boolean b) {
+    private void processRollback(DefaultTransactionStatus defStatus) throws SQLException {
         Transaction transaction = (Transaction) defStatus.getTransaction();
         Connection connection = transaction.getConnection().getConnection();
-        try {
-            connection.rollback();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        connection.rollback();
     }
 
     @Override
-    public void rollback(TransactionStatus status) {
+    public void rollback(TransactionStatus status) throws SQLException {
         if (status.isCompleted()) {
             throw new IllegalStateException("the transaction has bean commit");
         }
-        processRollback((DefaultTransactionStatus) status, false);
+        processRollback((DefaultTransactionStatus) status);
     }
 
+    @Getter
+    @Setter
     private DataSource dataSource;
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
 }
