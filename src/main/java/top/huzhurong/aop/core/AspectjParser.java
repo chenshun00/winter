@@ -5,6 +5,8 @@ import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
+import top.huzhurong.aop.advisor.transaction.TransactionManager;
+import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
 import top.huzhurong.aop.annotation.*;
 import top.huzhurong.aop.invocation.proxyFactory;
 
@@ -31,11 +33,15 @@ public class AspectjParser {
         if (aClass == null) {
             throw new NullPointerException();
         }
+        List<Advisor> advisors = new LinkedList<>();
+        TransactionManager transactionManager = new JdbcTransactionManager();
+        TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);
+        advisors.add(transactionAdvisor);
         if (!findAAnnotation(aClass, Aspectj.class)) {
-            return new LinkedList<>();
+            return advisors;
         }
         Method[] declaredMethods = aClass.getDeclaredMethods();
-        List<Advisor> advisors = new LinkedList<Advisor>();
+
         for (Method declaredMethod : declaredMethods) {
             Before before = (Before) findAAnnotationInUse(declaredMethod, Before.class);
             if (before != null) {
@@ -67,7 +73,6 @@ public class AspectjParser {
                 advisors.add(aroundAdvisor);
             }
         }
-        advisors.add(new TransactionAdvisor());
         return advisors;
     }
 
@@ -107,6 +112,7 @@ public class AspectjParser {
                 TransactionAdvisor transactionAdvisor = (TransactionAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
                     if (findAAnnotationInUse(declaredMethod, Transactional.class) != null) {
+                        transactionAdvisor.setObject(object);
                         advisorsList.add(transactionAdvisor);
                     }
                 }
@@ -134,7 +140,7 @@ public class AspectjParser {
      * @return 注解
      */
     public static Annotation findAAnnotationInUse(Method method, Class<? extends Annotation> annotation) {
-        return method.getAnnotation(annotation);
+        return method.getDeclaredAnnotation(annotation);
     }
 
 }

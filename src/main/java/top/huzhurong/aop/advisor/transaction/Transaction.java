@@ -9,16 +9,16 @@ import top.huzhurong.aop.advisor.transaction.manager.ConnectionManager;
  * @since 2018/8/29
  */
 public class Transaction {
-    private ConnectionManager ConnectionManager;
+    private ConnectionManager connectionManager;
     private boolean newTransaction;
     private boolean active;
 
     public ConnectionManager getConnection() {
-        return ConnectionManager;
+        return connectionManager;
     }
 
     public void setConnectionManager(ConnectionManager connectionManager) {
-        this.ConnectionManager = ConnectionManager;
+        this.connectionManager = connectionManager;
     }
 
     public boolean isNewTransaction() {

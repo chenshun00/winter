@@ -9,34 +9,37 @@ import top.huzhurong.aop.advisor.transaction.definition.TransactionStatus;
 import top.huzhurong.aop.invocation.AbstractInvocation;
 import top.huzhurong.aop.invocation.Invocation;
 
-import java.lang.reflect.Method;
 import java.sql.SQLException;
 
 /**
  * @author luobo.cs@raycloud.com
  * @since 2018/9/1
  */
-public class TransactionIntercepter {
+public class TransactionInterceptor {
 
     @Getter
     @Setter
-    private TransactionManager transactionManager = new JdbcTransactionManager();
+    private TransactionManager transactionManager;
 
-    public Object doTransaction(Invocation invocation, Method method, Object object, int args) throws SQLException {
+    public TransactionInterceptor(TransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
+    public Object doTransaction(Invocation invocation, Object object) throws SQLException {
         AbstractInvocation abstractInvocation = (AbstractInvocation) invocation;
-        TransactionDefinition definition = TransactionAttrSource.getDefinition(method);
+        TransactionDefinition definition = TransactionAttrSource.getDefinition(abstractInvocation.getMethod());
         //获取事务
         TransactionStatus transaction = transactionManager.getTransaction(definition);
         Object invoke = null;
         try {
-            invoke = method.invoke(object, abstractInvocation.getArgs());
+            invoke = abstractInvocation.getMethod().invoke(object, abstractInvocation.getArgs());
+            commitTransactionAfterReturning(transaction);
         } catch (Throwable e) {
             completeTransactionAfterThrowing(transaction);
             e.printStackTrace();
         } finally {
             cleanupTransactionInfo();
         }
-        commitTransactionAfterReturning(transaction);
         return invoke;
     }
 

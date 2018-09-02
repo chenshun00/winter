@@ -5,6 +5,9 @@ import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
+import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
+import top.huzhurong.aop.annotation.Transactional;
+import top.huzhurong.aop.core.AspectjParser;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -47,6 +50,13 @@ public abstract class AbstractInvocation implements Invocation {
             AroundAdvisor aroundAdvisor = (AroundAdvisor) advisor;
             if (aroundAdvisor.getPointCut().equals(this.method.getName())) {
                 return aroundAdvisor.invoke(this);
+            } else {
+                return proceed();
+            }
+        } else if (advisor instanceof TransactionAdvisor) {
+            TransactionAdvisor transactionAdvisor = (TransactionAdvisor) advisor;
+            if (AspectjParser.findAAnnotationInUse(this.method, Transactional.class) != null) {
+                return transactionAdvisor.invoke(this);
             } else {
                 return proceed();
             }

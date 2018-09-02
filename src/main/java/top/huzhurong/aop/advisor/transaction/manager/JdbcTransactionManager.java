@@ -118,6 +118,7 @@ public class JdbcTransactionManager implements TransactionManager {
     private void processRollback(DefaultTransactionStatus defStatus) throws SQLException {
         Transaction transaction = (Transaction) defStatus.getTransaction();
         Connection connection = transaction.getConnection().getConnection();
+        defStatus.setCompleted();
         connection.rollback();
     }
 
