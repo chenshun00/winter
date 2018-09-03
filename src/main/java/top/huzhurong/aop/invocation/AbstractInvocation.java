@@ -6,8 +6,6 @@ import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
-import top.huzhurong.aop.annotation.Transactional;
-import top.huzhurong.aop.core.AspectjParser;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -34,28 +32,28 @@ public abstract class AbstractInvocation implements Invocation {
         Advisor advisor = advisors.get(++InvocationIndex);
         if (advisor instanceof BeforeAdvisor) {
             BeforeAdvisor beforeAdvisor = (BeforeAdvisor) advisor;
-            if (beforeAdvisor.getPointCut().equals(this.method.getName())) {
+            if (beforeAdvisor.getPointcut().match(this.method)) {
                 return beforeAdvisor.invoke(this);
             } else {
                 return proceed();
             }
         } else if (advisor instanceof AfterAdvisor) {
             AfterAdvisor afterAdvisor = (AfterAdvisor) advisor;
-            if (afterAdvisor.getPointCut().equals(this.method.getName())) {
+            if (afterAdvisor.getPointcut().match(this.method)) {
                 return afterAdvisor.invoke(this);
             } else {
                 return proceed();
             }
         } else if (advisor instanceof AroundAdvisor) {
             AroundAdvisor aroundAdvisor = (AroundAdvisor) advisor;
-            if (aroundAdvisor.getPointCut().equals(this.method.getName())) {
+            if (aroundAdvisor.getPointcut().match(this.method)) {
                 return aroundAdvisor.invoke(this);
             } else {
                 return proceed();
             }
         } else if (advisor instanceof TransactionAdvisor) {
             TransactionAdvisor transactionAdvisor = (TransactionAdvisor) advisor;
-            if (AspectjParser.findAAnnotationInUse(this.method, Transactional.class) != null) {
+            if (transactionAdvisor.getPointcut().match(this.method)) {
                 return transactionAdvisor.invoke(this);
             } else {
                 return proceed();

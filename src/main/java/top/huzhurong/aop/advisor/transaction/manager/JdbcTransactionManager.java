@@ -73,9 +73,9 @@ public class JdbcTransactionManager implements TransactionManager {
             Connection connection = transaction.getConnection().getConnection();
             if (definition.isReadOnly()) {
                 connection.setReadOnly(true);
-                Statement statement = connection.createStatement();
-                statement.execute("set transaction read only");
-                statement.close();
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute("set transaction read only");
+                }
             }
 
             connection.setAutoCommit(false);

@@ -4,6 +4,8 @@ import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
+import top.huzhurong.aop.advisor.pointcut.StringPointcut;
+import top.huzhurong.aop.advisor.pointcut.TransctionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
@@ -36,6 +38,7 @@ public class AspectjParser {
         List<Advisor> advisors = new LinkedList<>();
         TransactionManager transactionManager = new JdbcTransactionManager();
         TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);
+        transactionAdvisor.setPointcut(new TransctionPointcut());
         advisors.add(transactionAdvisor);
         if (!findAAnnotation(aClass, Aspectj.class)) {
             return advisors;
@@ -45,30 +48,26 @@ public class AspectjParser {
         for (Method declaredMethod : declaredMethods) {
             Before before = (Before) findAAnnotationInUse(declaredMethod, Before.class);
             if (before != null) {
-                //暂时将pointCut定义为切点
-                String pointCut = before.value();
                 BeforeAdvisor beforeAdvisor = new BeforeAdvisor();
                 beforeAdvisor.setObject(aClass.newInstance());
                 beforeAdvisor.setMethod(declaredMethod);
-                beforeAdvisor.setPointCut(pointCut);
+                beforeAdvisor.setPointcut(new StringPointcut(before.value()));
                 advisors.add(beforeAdvisor);
             }
             After after = (After) findAAnnotationInUse(declaredMethod, After.class);
             if (after != null) {
-                String pointCut = after.value();
                 AfterAdvisor afterAdvisor = new AfterAdvisor();
                 afterAdvisor.setObject(aClass.newInstance());
                 afterAdvisor.setMethod(declaredMethod);
-                afterAdvisor.setPointCut(pointCut);
+                afterAdvisor.setPointcut(new StringPointcut(after.value()));
                 advisors.add(afterAdvisor);
             }
             Around around = (Around) findAAnnotationInUse(declaredMethod, Around.class);
             if (around != null) {
-                String pointCut = around.value();
                 AroundAdvisor aroundAdvisor = new AroundAdvisor();
                 aroundAdvisor.setObject(aClass.newInstance());
                 aroundAdvisor.setMethod(declaredMethod);
-                aroundAdvisor.setPointCut(pointCut);
+                aroundAdvisor.setPointcut(new StringPointcut(around.value()));
                 aroundAdvisor.setArgs(declaredMethod.getParameterCount());
                 advisors.add(aroundAdvisor);
             }
@@ -90,21 +89,21 @@ public class AspectjParser {
             if (advisor instanceof BeforeAdvisor) {
                 BeforeAdvisor beforeAdvisor = (BeforeAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
-                    if (declaredMethod.getName().equals(beforeAdvisor.getPointCut())) {
+                    if (beforeAdvisor.getPointcut().match(declaredMethod)) {
                         advisorsList.add(advisor);
                     }
                 }
             } else if (advisor instanceof AfterAdvisor) {
                 AfterAdvisor afterAdvisor = (AfterAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
-                    if (declaredMethod.getName().equals(afterAdvisor.getPointCut())) {
+                    if (afterAdvisor.getPointcut().match(declaredMethod)) {
                         advisorsList.add(advisor);
                     }
                 }
             } else if (advisor instanceof AroundAdvisor) {
                 AroundAdvisor aroundAdvisor = (AroundAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
-                    if (declaredMethod.getName().equals(aroundAdvisor.getPointCut())) {
+                    if (aroundAdvisor.getPointcut().match(declaredMethod)) {
                         advisorsList.add(advisor);
                     }
                 }

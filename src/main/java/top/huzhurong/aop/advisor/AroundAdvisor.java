@@ -1,7 +1,5 @@
 package top.huzhurong.aop.advisor;
 
-import lombok.Getter;
-import lombok.Setter;
 import top.huzhurong.aop.invocation.CglibInvocation;
 import top.huzhurong.aop.invocation.Invocation;
 import top.huzhurong.aop.invocation.JdkInvocation;
@@ -14,22 +12,7 @@ import java.lang.reflect.Method;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
-public class AroundAdvisor implements MethodInterceptor {
-
-    @Getter
-    @Setter
-    private String pointCut;
-    @Getter
-    @Setter
-    private Method method;
-
-    @Getter
-    @Setter
-    private Object object;
-
-    @Getter
-    @Setter
-    private int args;
+public class AroundAdvisor extends AbstractAdvisor implements MethodInterceptor {
 
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
@@ -43,5 +26,35 @@ public class AroundAdvisor implements MethodInterceptor {
         } else {
             throw new IllegalAccessException("参数非法!");
         }
+    }
+
+    private Method method;
+
+    private Object object;
+
+    private int args;
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public void setMethod(Method method) {
+        this.method = method;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    public int getArgs() {
+        return args;
+    }
+
+    public void setArgs(int args) {
+        this.args = args;
     }
 }
