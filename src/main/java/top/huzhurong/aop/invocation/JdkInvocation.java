@@ -12,7 +12,7 @@ import java.util.List;
 
 public class JdkInvocation extends AbstractInvocation implements Invocation {
 
-    public JdkInvocation(Object target, Method method, Object[] args, List<Advisor> advisors) {
-        super(target, method, args, null, advisors);
+    public JdkInvocation(Object target, Object proxy, Method method, Object[] args, List<Advisor> advisors) {
+        super(target, proxy, method, args, advisors);
     }
 }

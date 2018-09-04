@@ -14,17 +14,35 @@ import java.util.List;
 public class CglibInvocation extends AbstractInvocation implements Invocation {
 
     private Boolean isPublic;
+    private MethodProxy methodProxy;
 
-    public CglibInvocation(Object target, Method method, Object[] args, MethodProxy methodProxy, List<Advisor> advisors) {
-        super(target, method, args, methodProxy, advisors);
+    public CglibInvocation(Object target, Object proxy, Method method, Object[] args, MethodProxy methodProxy, List<Advisor> advisors) {
+        super(target, proxy, method, args, advisors);
         isPublic = Modifier.isPublic(method.getModifiers());
+        this.methodProxy = methodProxy;
     }
 
     @Override
     protected Object invokePointCut() throws Throwable {
         if (isPublic) {
-            return getMethodProxy().invokeSuper(getTarget(), getArgs());
+            return this.methodProxy.invokeSuper(this.getProxy(), getArgs());
         }
         return super.invokePointCut();
+    }
+
+    public Boolean getPublic() {
+        return isPublic;
+    }
+
+    public void setPublic(Boolean aPublic) {
+        isPublic = aPublic;
+    }
+
+    public MethodProxy getMethodProxy() {
+        return methodProxy;
+    }
+
+    public void setMethodProxy(MethodProxy methodProxy) {
+        this.methodProxy = methodProxy;
     }
 }

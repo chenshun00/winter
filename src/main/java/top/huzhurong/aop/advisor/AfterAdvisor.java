@@ -4,8 +4,6 @@ import top.huzhurong.aop.invocation.CglibInvocation;
 import top.huzhurong.aop.invocation.Invocation;
 import top.huzhurong.aop.invocation.JdkInvocation;
 
-import java.lang.reflect.Method;
-
 /**
  * 后置增强
  *
@@ -14,9 +12,6 @@ import java.lang.reflect.Method;
  */
 public class AfterAdvisor extends AbstractAdvisor implements MethodInterceptor {
 
-    private Method method;
-    private Object object;
-
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
         try {
@@ -24,29 +19,13 @@ public class AfterAdvisor extends AbstractAdvisor implements MethodInterceptor {
         } finally {
             if (invocation instanceof CglibInvocation) {
                 CglibInvocation cglibInvocation = (CglibInvocation) invocation;
-                method.setAccessible(true);
-                method.invoke(object, cglibInvocation.getArgs());
+                cglibInvocation.getMethod().setAccessible(true);
+                cglibInvocation.getMethod().invoke(cglibInvocation.getTarget(), cglibInvocation.getArgs());
             } else if (invocation instanceof JdkInvocation) {
                 JdkInvocation jdkInvocation = (JdkInvocation) invocation;
-                method.setAccessible(true);
-                method.invoke(object, jdkInvocation.getArgs());
+                jdkInvocation.getMethod().setAccessible(true);
+                jdkInvocation.getMethod().invoke(jdkInvocation.getTarget(), jdkInvocation.getArgs());
             }
         }
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public Object getObject() {
-        return object;
-    }
-
-    public void setObject(Object object) {
-        this.object = object;
     }
 }

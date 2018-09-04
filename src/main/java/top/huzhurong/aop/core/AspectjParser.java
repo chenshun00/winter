@@ -49,24 +49,18 @@ public class AspectjParser {
             Before before = (Before) findAAnnotationInUse(declaredMethod, Before.class);
             if (before != null) {
                 BeforeAdvisor beforeAdvisor = new BeforeAdvisor();
-                beforeAdvisor.setObject(aClass.newInstance());
-                beforeAdvisor.setMethod(declaredMethod);
                 beforeAdvisor.setPointcut(new StringPointcut(before.value()));
                 advisors.add(beforeAdvisor);
             }
             After after = (After) findAAnnotationInUse(declaredMethod, After.class);
             if (after != null) {
                 AfterAdvisor afterAdvisor = new AfterAdvisor();
-                afterAdvisor.setObject(aClass.newInstance());
-                afterAdvisor.setMethod(declaredMethod);
                 afterAdvisor.setPointcut(new StringPointcut(after.value()));
                 advisors.add(afterAdvisor);
             }
             Around around = (Around) findAAnnotationInUse(declaredMethod, Around.class);
             if (around != null) {
                 AroundAdvisor aroundAdvisor = new AroundAdvisor();
-                aroundAdvisor.setObject(aClass.newInstance());
-                aroundAdvisor.setMethod(declaredMethod);
                 aroundAdvisor.setPointcut(new StringPointcut(around.value()));
                 aroundAdvisor.setArgs(declaredMethod.getParameterCount());
                 advisors.add(aroundAdvisor);
@@ -81,11 +75,10 @@ public class AspectjParser {
      * @param object   ioc 容器对象(实例化对象，未实现ioc之前就是自己new的实例对象)
      * @param advisors 切面集合
      */
-    public static Object findApplyAdvisor(Object object, List<Advisor> advisors) {
+    public static Object findApplyAdvisor(Object object, List<Advisor> advisors, Object aspectj) {
         List<Advisor> advisorsList = new LinkedList<>();
+        Method[] declaredMethods = object.getClass().getDeclaredMethods();
         for (Advisor advisor : advisors) {
-            Method[] declaredMethods = object.getClass().getDeclaredMethods();
-
             if (advisor instanceof BeforeAdvisor) {
                 BeforeAdvisor beforeAdvisor = (BeforeAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
@@ -120,7 +113,7 @@ public class AspectjParser {
         if (advisorsList.size() == 0) {
             return object;
         } else {
-            return proxyFactory.newProxy(object.getClass(), advisorsList);
+            return proxyFactory.newProxy(aspectj, object.getClass(), advisorsList);
         }
     }
 

@@ -16,39 +16,32 @@ public class AroundAdvisor extends AbstractAdvisor implements MethodInterceptor 
 
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
-        if (invocation instanceof CglibInvocation || invocation instanceof JdkInvocation) {
-            method.setAccessible(true);
-            if (args == 0) {
-                return method.invoke(object);
-            } else {
-                return method.invoke(object, invocation);
-            }
+        if (invocation instanceof CglibInvocation) {
+            CglibInvocation cglibInvocation = (CglibInvocation) invocation;
+            Method method = cglibInvocation.getMethod();
+            return handle(method, cglibInvocation.getTarget(), invocation);
+        } else if (invocation instanceof JdkInvocation) {
+            JdkInvocation jdkInvocation = (JdkInvocation) invocation;
+            Method method = jdkInvocation.getMethod();
+            return handle(method, jdkInvocation.getTarget(), invocation);
         } else {
             throw new IllegalAccessException("参数非法!");
         }
     }
 
-    private Method method;
-
-    private Object object;
+    private Object handle(Method method, Object target, Invocation invocation) throws Throwable {
+        method.setAccessible(true);
+        if (args == 0) {
+            return method.invoke(target);
+        } else {
+            if (invocation == null) {
+                throw new IllegalStateException("切面处理状态异常，可能是个bug");
+            }
+            return method.invoke(target, invocation);
+        }
+    }
 
     private int args;
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public Object getObject() {
-        return object;
-    }
-
-    public void setObject(Object object) {
-        this.object = object;
-    }
 
     public int getArgs() {
         return args;

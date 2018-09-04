@@ -13,29 +13,28 @@ import java.util.List;
  */
 public class proxyFactory {
     @SuppressWarnings("unchecked")
-    private static <T> T createProxy(Class<T> tClass, List<Advisor> advisors) {
+    private static <T> T createProxy(Object target, Class<T> tClass, List<Advisor> advisors) {
         Enhancer enhancer = new Enhancer();
         enhancer.setCallback((MethodInterceptor) (object, method, args, methodProxy) ->
-                new CglibInvocation(object, method, args, methodProxy, advisors).proceed());
+                new CglibInvocation(target, object, method, args, methodProxy, advisors).proceed());
         enhancer.setCallbackFilter(method -> 0);
         enhancer.setSuperclass(tClass);
         return (T) enhancer.create();
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T createJdkProxy(Class<T> tClass, List<Advisor> advisors) throws IllegalAccessException, InstantiationException {
+    private static <T> T createJdkProxy(Object target, Class<T> tClass, List<Advisor> advisors) throws IllegalAccessException, InstantiationException {
         ClassLoader classLoader = tClass.getClassLoader();
-        JdkProxy jdkProxy = new JdkProxy(tClass.newInstance(), advisors);
-        Object target = Proxy.newProxyInstance(classLoader, tClass.getInterfaces(), jdkProxy);
-        return (T) target;
+        JdkProxy jdkProxy = new JdkProxy(target, tClass, advisors);
+        return (T) Proxy.newProxyInstance(classLoader, tClass.getInterfaces(), jdkProxy);
     }
 
-    public static <T> T newProxy(Class<T> aClass, List<Advisor> advisorsList) {
+    public static <T> T newProxy(Object target, Class<T> aClass, List<Advisor> advisorsList) {
         if (aClass.getInterfaces().length == 0 && aClass.getSuperclass().equals(Object.class)) {
-            return createProxy(aClass, advisorsList);
+            return createProxy(target, aClass, advisorsList);
         } else if (aClass.getInterfaces().length != 0) {
             try {
-                return createJdkProxy(aClass, advisorsList);
+                return createJdkProxy(target, aClass, advisorsList);
             } catch (IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
                 return null;

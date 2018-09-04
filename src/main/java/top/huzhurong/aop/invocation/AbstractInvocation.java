@@ -1,6 +1,5 @@
 package top.huzhurong.aop.invocation;
 
-import net.sf.cglib.proxy.MethodProxy;
 import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
@@ -17,11 +16,10 @@ import java.util.List;
 public abstract class AbstractInvocation implements Invocation {
     private int InvocationIndex = -1;
 
-
     private Object target;
+    private Object proxy;
     private Method method;
     private Object[] args;
-    private MethodProxy methodProxy;
     private List<Advisor> advisors;
 
     @Override
@@ -64,16 +62,16 @@ public abstract class AbstractInvocation implements Invocation {
     }
 
 
-    protected Object invokePointCut() throws Throwable {
-        return method.invoke(target, args);
-    }
-
-    public AbstractInvocation(Object target, Method method, Object[] args, MethodProxy methodProxy, List<Advisor> advisors) {
+    public AbstractInvocation(Object target, Object proxy, Method method, Object[] args, List<Advisor> advisors) {
         this.target = target;
+        this.proxy = proxy;
         this.method = method;
         this.args = args;
-        this.methodProxy = methodProxy;
         this.advisors = advisors;
+    }
+
+    protected Object invokePointCut() throws Throwable {
+        return method.invoke(proxy, args);
     }
 
     public Object getTarget() {
@@ -82,6 +80,14 @@ public abstract class AbstractInvocation implements Invocation {
 
     public void setTarget(Object target) {
         this.target = target;
+    }
+
+    public Object getProxy() {
+        return proxy;
+    }
+
+    public void setProxy(Object proxy) {
+        this.proxy = proxy;
     }
 
     public Method getMethod() {
@@ -98,14 +104,6 @@ public abstract class AbstractInvocation implements Invocation {
 
     public void setArgs(Object[] args) {
         this.args = args;
-    }
-
-    public MethodProxy getMethodProxy() {
-        return methodProxy;
-    }
-
-    public void setMethodProxy(MethodProxy methodProxy) {
-        this.methodProxy = methodProxy;
     }
 
     public List<Advisor> getAdvisors() {

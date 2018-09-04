@@ -14,38 +14,22 @@ import java.lang.reflect.Method;
  */
 public class BeforeAdvisor extends AbstractAdvisor implements MethodInterceptor {
 
-    private Method method;
-    private Object object;
-
     public Object invoke(Invocation invocation) throws Throwable {
         if (invocation instanceof CglibInvocation) {
             CglibInvocation cglibInvocation = (CglibInvocation) invocation;
+            Method method = cglibInvocation.getMethod();
             method.setAccessible(true);
             Object[] args = cglibInvocation.getArgs();
-            method.invoke(object, args);
+            method.invoke(cglibInvocation.getTarget(), args);
         }
         if (invocation instanceof JdkInvocation) {
             JdkInvocation jdkInvocation = (JdkInvocation) invocation;
+            Method method = jdkInvocation.getMethod();
             method.setAccessible(true);
             Object[] args = jdkInvocation.getArgs();
-            method.invoke(object, args);
+            method.invoke(jdkInvocation.getTarget(), args);
         }
         return invocation.proceed();
     }
 
-    public Method getMethod() {
-        return method;
-    }
-
-    public void setMethod(Method method) {
-        this.method = method;
-    }
-
-    public Object getObject() {
-        return object;
-    }
-
-    public void setObject(Object object) {
-        this.object = object;
-    }
 }

@@ -51,7 +51,7 @@ public class TransactionTest {
                 transactionManager.setDataSource(druidDataSource);
             }
         }
-        TestService testServiceProxy = (TestService) AspectjParser.findApplyAdvisor(testService, advisors);
+        TestService testServiceProxy = (TestService) AspectjParser.findApplyAdvisor(testService, advisors, null);
         testServiceProxy.addTest(testAdd);
     }
 }
