@@ -12,12 +12,12 @@ import top.huzhurong.aop.invocation.Invocation;
  */
 @Aspectj
 public class TestAspectj2 {
-    @Before("info2")
+    @Before("public void top.huzhurong.aop.core.Bin info2()")
     public void binfoefore2() {
         System.out.println("before2");
     }
 
-    @After("info2")
+    @After("public void top.huzhurong.aop.core.Bin info2()")
     public void after() {
         System.out.println("after2");
     }
@@ -25,7 +25,7 @@ public class TestAspectj2 {
     /**
      * 测试带参数 Invocation invocation
      */
-    @Around("other")
+    @Around("public void top.huzhurong.aop.core.Bin other()")
     public Object around(Invocation invocation) throws Throwable {
         System.out.println("around before");
         Object proceed = invocation.proceed();

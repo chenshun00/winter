@@ -5,7 +5,7 @@ import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 import top.huzhurong.aop.advisor.pointcut.StringPointcut;
-import top.huzhurong.aop.advisor.pointcut.TransctionPointcut;
+import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
@@ -38,7 +38,7 @@ public class AspectjParser {
         List<Advisor> advisors = new LinkedList<>();
         TransactionManager transactionManager = new JdbcTransactionManager();
         TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);
-        transactionAdvisor.setPointcut(new TransctionPointcut());
+        transactionAdvisor.setPointcut(new TransactionPointcut());
         advisors.add(transactionAdvisor);
         if (!findAAnnotation(aClass, Aspectj.class)) {
             return advisors;

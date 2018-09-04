@@ -15,14 +15,14 @@ public class TestUse {
         //1、获取所有的advisor
 //        List<Advisor> advisors = AspectjParser.parserAspectj(TestAspectj2.class);
         List<Advisor> advisors = AspectjParser.parserAspectj(TestAspectj.class);
-        advisors.addAll(AspectjParser.parserAspectj(TestAspectj2.class));
+//        advisors.addAll(AspectjParser.parserAspectj(TestAspectj2.class));
         //2、实例化对象
         Bin bin = new Bin();
         //3、后置处理判断bin是不是满足拦截要求
         Bin binProxy = (Bin) AspectjParser.findApplyAdvisor(bin, advisors);
         assert binProxy != null;
-        System.out.println(binProxy.other());
-//        binProxy.info2();
+//        System.out.println(binProxy.other());
+        binProxy.info2();
         //
     }
 

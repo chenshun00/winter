@@ -18,7 +18,7 @@ public abstract class AbstractAdvisor implements MethodInterceptor {
 
     @Override
     public Pointcut getPointcut() {
-        return null;
+        return this.pointcut;
     }
 
     public void setPointcut(Pointcut pointcut) {

@@ -11,22 +11,22 @@ import top.huzhurong.aop.annotation.Before;
 @Aspectj
 public class TestAspectj {
 
-    @Before("info2")
+    @Before("public void top.huzhurong.aop.core.Bin info2()")
     public void first() {
         System.out.println("我是TestAspectj的第1个测试方法");
     }
 
-    @Before("info2")
+    @Before("public void top.huzhurong.aop.core.Bin info2()")
     public void binfoefore() {
         System.out.println("before");
     }
 
-    @Before("info2")
+    @Before("public void top.huzhurong.aop.core.Bin info2()")
     public void inter() {
         System.out.println("我是TestAspectj的第二个测试方法");
     }
 
-    @After("info2")
+    @After("public void top.huzhurong.aop.core.Bin info2()")
     public void after() {
         System.out.println("after");
     }
