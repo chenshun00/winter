@@ -71,7 +71,7 @@ public abstract class AbstractInvocation implements Invocation {
     }
 
     protected Object invokePointCut() throws Throwable {
-        return method.invoke(proxy, args);
+        return method.invoke(target, args);
     }
 
     public Object getTarget() {

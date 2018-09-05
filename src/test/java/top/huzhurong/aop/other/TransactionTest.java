@@ -39,11 +39,12 @@ public class TransactionTest {
     }
 
     @Test
-    public void TestTransaction() throws Exception {
+    public void TestTransaction() {
 
         top.huzhurong.aop.other.Test testAdd = top.huzhurong.aop.other.Test.builder().id(23).age(222).name("test add again").build();
 
-        List<Advisor> advisors = AspectjParser.parserAspectj(TransactionTest.class);
+        TransactionTest transactionTest = new TransactionTest();
+        List<Advisor> advisors = AspectjParser.parserAspectj(transactionTest.getClass(), transactionTest);
         for (Advisor advisor : advisors) {
             if (advisor instanceof TransactionAdvisor) {
                 TransactionAdvisor transactionAdvisor = (TransactionAdvisor) advisor;
@@ -51,7 +52,7 @@ public class TransactionTest {
                 transactionManager.setDataSource(druidDataSource);
             }
         }
-        TestService testServiceProxy = (TestService) AspectjParser.findApplyAdvisor(testService, advisors, null);
+        TestService testServiceProxy = (TestService) AspectjParser.findApplyAdvisor(testService, advisors);
         testServiceProxy.addTest(testAdd);
     }
 }

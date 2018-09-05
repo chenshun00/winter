@@ -12,17 +12,17 @@ import top.huzhurong.aop.invocation.Invocation;
  */
 @Aspectj
 public class TestAspectj3 {
-    @Before("doInfo")
+    @Before("public String top.huzhurong.aop.core.TestInImpl doInfo()")
     public void before() {
         System.out.println("jdk 动态代理前置拦截");
     }
 
-    @After("doInfo")
+    @After("public String top.huzhurong.aop.core.TestInImpl doInfo()")
     public void after() {
         System.out.println("jdk 动态代理后置拦截");
     }
 
-    @Around("doInfo")
+    @Around("public String top.huzhurong.aop.core.TestInImpl doInfo()")
     public Object around(Invocation invocation) {
         System.out.println("jdk 环绕拦截前");
         try {

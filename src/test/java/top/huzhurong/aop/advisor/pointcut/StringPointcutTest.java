@@ -3,6 +3,8 @@ package top.huzhurong.aop.advisor.pointcut;
 import org.junit.Assert;
 import org.junit.Test;
 import top.huzhurong.aop.core.Bin;
+import top.huzhurong.aop.core.TestIn;
+import top.huzhurong.aop.core.TestInImpl;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,12 +17,17 @@ import java.lang.reflect.Modifier;
 public class StringPointcutTest {
 
     @Test
-    public void testModifier() {
+    public void testModifier() throws NoSuchMethodException {
         int publicModifier = 1;
         Assert.assertTrue(Modifier.isPublic(publicModifier));
 
         int privateModifier = 2;
         Assert.assertTrue(Modifier.isPrivate(privateModifier));
+
+        TestIn testIn = new TestInImpl();
+        Method doInfo = testIn.getClass().getDeclaredMethod("doInfo");
+        Assert.assertEquals(TestInImpl.class, doInfo.getDeclaringClass());
+        Assert.assertEquals(1, doInfo.getModifiers());
     }
 
     @Test

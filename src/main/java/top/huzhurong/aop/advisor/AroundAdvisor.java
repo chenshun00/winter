@@ -1,5 +1,6 @@
 package top.huzhurong.aop.advisor;
 
+import top.huzhurong.aop.advisor.pointcut.Pointcut;
 import top.huzhurong.aop.invocation.CglibInvocation;
 import top.huzhurong.aop.invocation.Invocation;
 import top.huzhurong.aop.invocation.JdkInvocation;
@@ -14,16 +15,15 @@ import java.lang.reflect.Method;
  */
 public class AroundAdvisor extends AbstractAdvisor implements MethodInterceptor {
 
+    public AroundAdvisor(Method advisorMethod, Object proxy, Object[] args, Pointcut pointcut) {
+        super(advisorMethod, proxy, args, pointcut);
+    }
+
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
-        if (invocation instanceof CglibInvocation) {
-            CglibInvocation cglibInvocation = (CglibInvocation) invocation;
-            Method method = cglibInvocation.getMethod();
-            return handle(method, cglibInvocation.getTarget(), invocation);
-        } else if (invocation instanceof JdkInvocation) {
-            JdkInvocation jdkInvocation = (JdkInvocation) invocation;
-            Method method = jdkInvocation.getMethod();
-            return handle(method, jdkInvocation.getTarget(), invocation);
+        if (invocation instanceof CglibInvocation || invocation instanceof JdkInvocation) {
+            Method method = getAdvisorMethod();
+            return handle(method, getProxy(), invocation);
         } else {
             throw new IllegalAccessException("参数非法!");
         }
@@ -31,7 +31,7 @@ public class AroundAdvisor extends AbstractAdvisor implements MethodInterceptor 
 
     private Object handle(Method method, Object target, Invocation invocation) throws Throwable {
         method.setAccessible(true);
-        if (args == 0) {
+        if (getArgs().length == 0) {
             return method.invoke(target);
         } else {
             if (invocation == null) {
@@ -41,13 +41,4 @@ public class AroundAdvisor extends AbstractAdvisor implements MethodInterceptor 
         }
     }
 
-    private int args;
-
-    public int getArgs() {
-        return args;
-    }
-
-    public void setArgs(int args) {
-        this.args = args;
-    }
 }

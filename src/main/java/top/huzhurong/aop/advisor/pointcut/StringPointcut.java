@@ -70,10 +70,20 @@ public class StringPointcut implements Pointcut {
         }
     }
 
+    /**
+     * jdk 是采取实现接口的方式，接口的方法都是public + abstract = 1+ 1024(修饰符)
+     *
+     * @param method 方法
+     * @return
+     */
     @Override
     public boolean match(Method method) {
         //比较方法修饰符
         int modifiers = method.getModifiers();
+        if (method.getDeclaringClass().isInterface()) {
+            modifierNumber = 1024 + modifierNumber;
+            className = method.getDeclaringClass().getName();
+        }
         if (!modifier.equals("*") && modifiers != modifierNumber) {
             return false;
         }

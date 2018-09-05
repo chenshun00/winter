@@ -17,9 +17,10 @@ import java.util.List;
 public class AspectjParserTest {
 
     @Test
-    public void parserAspectj() throws InstantiationException, IllegalAccessException {
-        List<Advisor> advisors = AspectjParser.parserAspectj(TestAspectj.class);
-        Assert.assertEquals(advisors.size(),1);
+    public void parserAspectj() {
+        TestAspectj testAspectj = new TestAspectj();
+        List<Advisor> advisors = AspectjParser.parserAspectj(testAspectj.getClass(), testAspectj);
+        Assert.assertEquals(advisors.size(), 1);
     }
 
     @Test

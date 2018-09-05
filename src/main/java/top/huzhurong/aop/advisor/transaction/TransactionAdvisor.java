@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import top.huzhurong.aop.advisor.AbstractAdvisor;
 import top.huzhurong.aop.advisor.MethodInterceptor;
+import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.manager.TransactionInterceptor;
 import top.huzhurong.aop.invocation.Invocation;
 
@@ -27,17 +28,14 @@ public class TransactionAdvisor extends AbstractAdvisor implements MethodInterce
     private TransactionInterceptor transactionInterceptor;
 
     public TransactionAdvisor(TransactionManager transactionManager) {
+        super(null, null, null, new TransactionPointcut());
         this.transactionManager = transactionManager;
         this.transactionInterceptor = new TransactionInterceptor(this.transactionManager);
     }
 
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
-        try {
-            return transactionInterceptor.doTransaction(invocation, this.object);
-        } catch (Throwable e) {
-            throw e;
-        }
+        return transactionInterceptor.doTransaction(invocation, this.object);
     }
 
 }

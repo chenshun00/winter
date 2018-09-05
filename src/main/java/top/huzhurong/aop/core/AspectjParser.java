@@ -9,7 +9,10 @@ import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
-import top.huzhurong.aop.annotation.*;
+import top.huzhurong.aop.annotation.After;
+import top.huzhurong.aop.annotation.Around;
+import top.huzhurong.aop.annotation.Aspectj;
+import top.huzhurong.aop.annotation.Before;
 import top.huzhurong.aop.invocation.proxyFactory;
 
 import java.lang.annotation.Annotation;
@@ -31,7 +34,7 @@ public class AspectjParser {
      * @param aClass 切面对象
      * @return 切面集合
      */
-    public static List<Advisor> parserAspectj(Class<?> aClass) throws IllegalAccessException, InstantiationException {
+    public static List<Advisor> parserAspectj(Class<?> aClass, Object object) {
         if (aClass == null) {
             throw new NullPointerException();
         }
@@ -48,21 +51,17 @@ public class AspectjParser {
         for (Method declaredMethod : declaredMethods) {
             Before before = (Before) findAAnnotationInUse(declaredMethod, Before.class);
             if (before != null) {
-                BeforeAdvisor beforeAdvisor = new BeforeAdvisor();
-                beforeAdvisor.setPointcut(new StringPointcut(before.value()));
+                BeforeAdvisor beforeAdvisor = new BeforeAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(before.value()));
                 advisors.add(beforeAdvisor);
             }
             After after = (After) findAAnnotationInUse(declaredMethod, After.class);
             if (after != null) {
-                AfterAdvisor afterAdvisor = new AfterAdvisor();
-                afterAdvisor.setPointcut(new StringPointcut(after.value()));
+                AfterAdvisor afterAdvisor = new AfterAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(after.value()));
                 advisors.add(afterAdvisor);
             }
             Around around = (Around) findAAnnotationInUse(declaredMethod, Around.class);
             if (around != null) {
-                AroundAdvisor aroundAdvisor = new AroundAdvisor();
-                aroundAdvisor.setPointcut(new StringPointcut(around.value()));
-                aroundAdvisor.setArgs(declaredMethod.getParameterCount());
+                AroundAdvisor aroundAdvisor = new AroundAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(around.value()));
                 advisors.add(aroundAdvisor);
             }
         }
@@ -75,7 +74,7 @@ public class AspectjParser {
      * @param object   ioc 容器对象(实例化对象，未实现ioc之前就是自己new的实例对象)
      * @param advisors 切面集合
      */
-    public static Object findApplyAdvisor(Object object, List<Advisor> advisors, Object aspectj) {
+    public static Object findApplyAdvisor(Object object, List<Advisor> advisors) {
         List<Advisor> advisorsList = new LinkedList<>();
         Method[] declaredMethods = object.getClass().getDeclaredMethods();
         for (Advisor advisor : advisors) {
@@ -103,7 +102,7 @@ public class AspectjParser {
             } else if (advisor instanceof TransactionAdvisor) {
                 TransactionAdvisor transactionAdvisor = (TransactionAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
-                    if (findAAnnotationInUse(declaredMethod, Transactional.class) != null) {
+                    if (transactionAdvisor.getPointcut().match(declaredMethod)) {
                         transactionAdvisor.setObject(object);
                         advisorsList.add(transactionAdvisor);
                     }
@@ -113,7 +112,7 @@ public class AspectjParser {
         if (advisorsList.size() == 0) {
             return object;
         } else {
-            return proxyFactory.newProxy(aspectj, object.getClass(), advisorsList);
+            return proxyFactory.newProxy(object, object.getClass(), advisorsList);
         }
     }
 
