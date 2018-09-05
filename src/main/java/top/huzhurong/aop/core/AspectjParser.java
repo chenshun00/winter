@@ -103,7 +103,7 @@ public class AspectjParser {
                 TransactionAdvisor transactionAdvisor = (TransactionAdvisor) advisor;
                 for (Method declaredMethod : declaredMethods) {
                     if (transactionAdvisor.getPointcut().match(declaredMethod)) {
-                        transactionAdvisor.setObject(object);
+                        transactionAdvisor.setProxy(object);
                         advisorsList.add(transactionAdvisor);
                     }
                 }

@@ -67,6 +67,9 @@ public class StringPointcut implements Pointcut {
             case "PROTECTED":
                 modifierNumber = 4;
                 break;
+            default:
+                modifierNumber = -2;
+                break;
         }
     }
 

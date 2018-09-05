@@ -16,10 +16,10 @@ public class TestService {
     @Transactional
     public void addTest(Test test) {
         testDao.addTest(test);
-        Test testById = testDao.getTestById(22);
+        Test testById = testDao.getTestById(1);
         testById.setName("陈顺测试");
         testDao.updatetestById(testById);
-        int i = 10 / 0;
+        //int i = 10 / 0;
     }
 
 }

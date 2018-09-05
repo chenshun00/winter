@@ -2,6 +2,7 @@ package top.huzhurong.aop.advisor.transaction.manager;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.aop.advisor.transaction.TransactionAttrSource;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.definition.TransactionDefinition;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
  * @author luobo.cs@raycloud.com
  * @since 2018/9/1
  */
+@Slf4j
 public class TransactionInterceptor {
 
     @Getter
@@ -30,11 +32,13 @@ public class TransactionInterceptor {
         TransactionDefinition definition = TransactionAttrSource.getDefinition(abstractInvocation.getMethod());
         //获取事务
         TransactionStatus transaction = transactionManager.getTransaction(definition);
+        log.info("成功获取事务");
         Object invoke = null;
         try {
             invoke = abstractInvocation.getMethod().invoke(object, abstractInvocation.getArgs());
             commitTransactionAfterReturning(transaction);
         } catch (Throwable e) {
+            log.error("事务处理出现异常:{},开始进行事务回滚", e.getMessage());
             completeTransactionAfterThrowing(transaction);
             e.printStackTrace();
         } finally {

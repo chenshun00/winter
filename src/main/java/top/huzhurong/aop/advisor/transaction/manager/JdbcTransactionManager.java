@@ -2,6 +2,7 @@ package top.huzhurong.aop.advisor.transaction.manager;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.aop.advisor.transaction.Transaction;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.definition.DefaultTransactionStatus;
@@ -19,6 +20,7 @@ import java.sql.Statement;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/31
  */
+@Slf4j
 public class JdbcTransactionManager implements TransactionManager {
 
     @Override
@@ -108,6 +110,7 @@ public class JdbcTransactionManager implements TransactionManager {
         Transaction transaction = (Transaction) defStatus.getTransaction();
         Connection connection = transaction.getConnection().getConnection();
         try {
+            log.info("事务提交");
             connection.commit();
             defStatus.setCompleted();
         } catch (SQLException e) {
@@ -119,6 +122,7 @@ public class JdbcTransactionManager implements TransactionManager {
         Transaction transaction = (Transaction) defStatus.getTransaction();
         Connection connection = transaction.getConnection().getConnection();
         defStatus.setCompleted();
+        log.info("事务回滚");
         connection.rollback();
     }
 

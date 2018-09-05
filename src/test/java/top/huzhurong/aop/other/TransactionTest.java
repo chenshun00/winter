@@ -41,7 +41,7 @@ public class TransactionTest {
     @Test
     public void TestTransaction() {
 
-        top.huzhurong.aop.other.Test testAdd = top.huzhurong.aop.other.Test.builder().id(23).age(222).name("test add again").build();
+        top.huzhurong.aop.other.Test testAdd = top.huzhurong.aop.other.Test.builder().id(23).age(23).name("test add again").build();
 
         TransactionTest transactionTest = new TransactionTest();
         List<Advisor> advisors = AspectjParser.parserAspectj(transactionTest.getClass(), transactionTest);

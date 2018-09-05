@@ -24,7 +24,6 @@ public class TransactionAdvisor extends AbstractAdvisor implements MethodInterce
     @Setter
     private TransactionManager transactionManager;
 
-
     private TransactionInterceptor transactionInterceptor;
 
     public TransactionAdvisor(TransactionManager transactionManager) {
@@ -35,7 +34,7 @@ public class TransactionAdvisor extends AbstractAdvisor implements MethodInterce
 
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
-        return transactionInterceptor.doTransaction(invocation, this.object);
+        return transactionInterceptor.doTransaction(invocation, getProxy());
     }
 
 }
