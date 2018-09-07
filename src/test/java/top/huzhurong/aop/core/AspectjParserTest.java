@@ -8,6 +8,7 @@ import top.huzhurong.aop.annotation.Before;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -15,6 +16,14 @@ import java.util.List;
  * @since 2018/8/26
  */
 public class AspectjParserTest {
+
+    @Test
+    public void testAspectjOrder() {
+        TestAspectj testAspectj = new TestAspectj();
+        TestAspectj2 testAspectj2 = new TestAspectj2();
+        List<Advisor> advisors = AspectjParser.parserAspectj(Arrays.asList(testAspectj, testAspectj2));
+        advisors.forEach(advisor -> System.out.println(advisor.toString()));
+    }
 
     @Test
     public void parserAspectj() {
@@ -32,7 +41,7 @@ public class AspectjParserTest {
     @Test
     public void findAAnnotationInUse() throws NoSuchMethodException {
         Method before = TestAspectj.class.getDeclaredMethod("before");
-        Annotation aAnnotation = AspectjParser.findAAnnotationInUse(before, Before.class);
+        Annotation aAnnotation = AspectjParser.findAAnnotationInUse(before, Before.class).get();
         Assert.assertNotNull(aAnnotation);
     }
 }

@@ -9,16 +9,14 @@ import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
-import top.huzhurong.aop.annotation.After;
-import top.huzhurong.aop.annotation.Around;
-import top.huzhurong.aop.annotation.Aspectj;
-import top.huzhurong.aop.annotation.Before;
+import top.huzhurong.aop.annotation.*;
 import top.huzhurong.aop.invocation.proxyFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 解析切面
@@ -27,6 +25,27 @@ import java.util.List;
  * @since 2018/8/26
  */
 public class AspectjParser {
+
+    /**
+     * execute order , sort by @order annotation , default value is {@link Integer#MAX_VALUE}
+     * now the ioc container does not exist ， so we can't get aspectj set from ioc
+     *
+     * @param aspectjList set of aspectj
+     * @return advisor list
+     */
+    public static List<Advisor> parserAspectj(List<Object> aspectjList) {
+        aspectjList.sort((aspectj1, aspectj2) -> {
+            Order first = aspectj1.getClass().getAnnotation(Order.class);
+            Order second = aspectj2.getClass().getAnnotation(Order.class);
+            int firstOrder = first == null ? Integer.MAX_VALUE : first.value();
+            int secondOrder = second == null ? Integer.MAX_VALUE : second.value();
+            return Integer.compare(firstOrder, secondOrder);
+        });
+        List<Advisor> advisorList = new LinkedList<>();
+        aspectjList.forEach(as -> advisorList.addAll(parserAspectj(as.getClass(), as)));
+        advisorList.addAll(dealTransactionAdvisor());
+        return advisorList;
+    }
 
     /**
      * 解析切面，尚未实现ioc只能采取目前之中方法，如果实现了ioc就可以添加 beanProcessor 前后置处理
@@ -39,32 +58,36 @@ public class AspectjParser {
             throw new NullPointerException();
         }
         List<Advisor> advisors = new LinkedList<>();
-        TransactionManager transactionManager = new JdbcTransactionManager();
-        TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);
-        transactionAdvisor.setPointcut(new TransactionPointcut());
-        advisors.add(transactionAdvisor);
         if (!findAAnnotation(aClass, Aspectj.class)) {
             return advisors;
         }
         Method[] declaredMethods = aClass.getDeclaredMethods();
-
         for (Method declaredMethod : declaredMethods) {
-            Before before = (Before) findAAnnotationInUse(declaredMethod, Before.class);
-            if (before != null) {
-                BeforeAdvisor beforeAdvisor = new BeforeAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(before.value()));
+            findAAnnotationInUse(declaredMethod, Before.class).ifPresent(annotation -> {
+                BeforeAdvisor beforeAdvisor = new BeforeAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(((Before) annotation).value()));
                 advisors.add(beforeAdvisor);
-            }
-            After after = (After) findAAnnotationInUse(declaredMethod, After.class);
-            if (after != null) {
-                AfterAdvisor afterAdvisor = new AfterAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(after.value()));
+            });
+            findAAnnotationInUse(declaredMethod, After.class).ifPresent(after -> {
+                AfterAdvisor afterAdvisor = new AfterAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(((After) after).value()));
                 advisors.add(afterAdvisor);
-            }
-            Around around = (Around) findAAnnotationInUse(declaredMethod, Around.class);
-            if (around != null) {
-                AroundAdvisor aroundAdvisor = new AroundAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(around.value()));
+            });
+            findAAnnotationInUse(declaredMethod, Around.class).ifPresent(around -> {
+                AroundAdvisor aroundAdvisor = new AroundAdvisor(declaredMethod, object, declaredMethod.getParameterTypes(), new StringPointcut(((Around) around).value()));
                 advisors.add(aroundAdvisor);
-            }
+            });
         }
+        return advisors;
+    }
+
+    /**
+     * Temporary processing transaction , if we add ioc and more feature will add a flag to support if we use transaction
+     */
+    private static List<Advisor> dealTransactionAdvisor() {
+        List<Advisor> advisors = new LinkedList<>();
+        TransactionManager transactionManager = new JdbcTransactionManager();
+        TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);
+        transactionAdvisor.setPointcut(new TransactionPointcut());
+        advisors.add(transactionAdvisor);
         return advisors;
     }
 
@@ -130,8 +153,13 @@ public class AspectjParser {
      * @param annotation 注解
      * @return 注解
      */
-    public static Annotation findAAnnotationInUse(Method method, Class<? extends Annotation> annotation) {
-        return method.getDeclaredAnnotation(annotation);
+    public static Optional<Annotation> findAAnnotationInUse(Method method, Class<? extends Annotation> annotation) {
+        Annotation declaredAnnotation = method.getDeclaredAnnotation(annotation);
+        if (declaredAnnotation == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(declaredAnnotation);
+        }
     }
 
 }

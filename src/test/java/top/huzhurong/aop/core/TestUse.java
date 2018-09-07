@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import top.huzhurong.aop.advisor.Advisor;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -15,9 +16,8 @@ public class TestUse {
     public void test() {
         //1、获取所有的advisor
         TestAspectj testAspectj = new TestAspectj();
-        List<Advisor> advisors = AspectjParser.parserAspectj(testAspectj.getClass(), testAspectj);
         TestAspectj2 testAspectj2 = new TestAspectj2();
-        advisors.addAll(AspectjParser.parserAspectj(testAspectj2.getClass(), testAspectj2));
+        List<Advisor> advisors = AspectjParser.parserAspectj(Arrays.asList(testAspectj, testAspectj2));
         //2、实例化对象
         Bin bin = new Bin();
         //3、后置处理判断bin是不是满足拦截要求

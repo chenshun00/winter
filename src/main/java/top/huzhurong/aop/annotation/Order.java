@@ -6,13 +6,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 前置
+ * execute order about aspectj
  *
  * @author luobo.cs@raycloud.com
- * @since 2018/8/26
+ * @since 2018/9/7
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Before {
-    String value();
+@Target({ElementType.TYPE})
+public @interface Order {
+    /**
+     * the vales is more small and more higher
+     */
+    int value() default Integer.MAX_VALUE;
 }

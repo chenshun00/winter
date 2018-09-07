@@ -1,45 +1,35 @@
 package top.huzhurong.aop.core;
 
 import top.huzhurong.aop.annotation.After;
-import top.huzhurong.aop.annotation.Around;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.annotation.Before;
-import top.huzhurong.aop.invocation.Invocation;
+import top.huzhurong.aop.annotation.Order;
 
 /**
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
 @Aspectj
+@Order(1)
 public class TestAspectj2 {
     @Before("public void top.huzhurong.aop.core.Bin info2()")
     public void binfoefore2() {
-        System.out.println("before2");
+        System.out.println("-----$ before method in class TestAspectj2 $-----");
     }
 
     @After("public void top.huzhurong.aop.core.Bin info2()")
     public void after() {
-        System.out.println("after2");
+        System.out.println("-----$ after method in class TestAspectj2 $------");
     }
 
-    /**
-     * 测试带参数 Invocation invocation
-     */
-    @Around("public void top.huzhurong.aop.core.Bin other()")
-    public Object around(Invocation invocation) throws Throwable {
-        System.out.println("around before");
-        Object proceed = invocation.proceed();
-        System.out.println("around after");
-        return proceed;
-    }
-    /**
-     * 测试不带参数，建议分开参数
-     */
-//    @Around("other")
-//    public Object around() throws Throwable {
+//    /**
+//     * 测试带参数 Invocation invocation
+//     */
+//    @Around("public void top.huzhurong.aop.core.Bin other()")
+//    public Object around(Invocation invocation) throws Throwable {
 //        System.out.println("around before");
-////        Object proceed = invocation.proceed();
+//        Object proceed = invocation.proceed();
 //        System.out.println("around after");
-//        return "1";
+//        return proceed;
 //    }
 }
