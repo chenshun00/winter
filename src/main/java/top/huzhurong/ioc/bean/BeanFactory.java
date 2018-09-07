@@ -1,5 +1,7 @@
 package top.huzhurong.ioc.bean;
 
+import java.util.Set;
+
 /**
  * bean factory ， create bean to context or receive bean form context
  *
@@ -8,9 +10,11 @@ package top.huzhurong.ioc.bean;
  */
 public interface BeanFactory {
 
-    <T> T getBean(String name);
+    Object getBean(String name);
 
     <T> T getBean(Class<T> tClass);
 
     <T> T getBean(String name, Class<T> tClass);
+
+    boolean register(Set<ClassInfo> classInfoSet);
 }
