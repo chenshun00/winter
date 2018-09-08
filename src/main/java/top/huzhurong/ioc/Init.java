@@ -41,7 +41,7 @@ public class Init {
                 .collect(Collectors.toSet());
     }
 
-    public void Instantiation(Set<ClassInfo> classInfoSet) {
+    public void instantiation(Set<ClassInfo> classInfoSet) {
         Set<ClassInfo> collect = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
         //获取注入字段，每一个有可能注入对象
         beanFactory.register(collect);
@@ -97,7 +97,6 @@ public class Init {
                 ff.set(this.beanFactory.getBean(classInfo.getaClass()), bean);
             } catch (Exception e) {
                 log.error("inject failed," + e);
-                System.exit(2);
             }
         }
     }

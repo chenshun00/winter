@@ -28,7 +28,7 @@ public class InitTest {
     @Test
     public void instantiation() {
         Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc.scan.test");
-        init.Instantiation(classInfoSet);
+        init.instantiation(classInfoSet);
         BeanFactory beanFactory = init.getBeanFactory();
         TestScan1 testScan1 = (TestScan1) beanFactory.getBean("hhh");
         System.out.println(testScan1);
