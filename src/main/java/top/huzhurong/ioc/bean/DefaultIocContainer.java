@@ -11,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultIocContainer implements IocContainer {
 
+    /**
+     * name,
+     */
     private Map<String, Object> context;
     private Map<Class<?>, Object> classContext;
     private Map<Class<?>, String> classNameContext;
@@ -48,10 +51,9 @@ public class DefaultIocContainer implements IocContainer {
     }
 
     @Override
-    public boolean put(String name, Object object) {
+    public void put(String name, Object object) {
         context.put(name, object);
         classContext.put(object.getClass(), object);
         classNameContext.put(object.getClass(), object.getClass().getSimpleName());
-        return true;
     }
 }

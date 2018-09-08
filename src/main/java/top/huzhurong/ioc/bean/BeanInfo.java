@@ -13,7 +13,7 @@ public class BeanInfo {
         try {
             this.aClass = aClass;
             this.object = aClass.newInstance();
-            this.name = aClass.getName();
+            this.name = aClass.getSimpleName();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(2);
@@ -21,7 +21,7 @@ public class BeanInfo {
     }
 
     public BeanInfo(Object object) {
-        this(object, object.getClass().getName());
+        this(object, object.getClass().getSimpleName());
     }
 
     public BeanInfo(Object object, String name) {

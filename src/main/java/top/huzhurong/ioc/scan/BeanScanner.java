@@ -1,5 +1,6 @@
 package top.huzhurong.ioc.scan;
 
+import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.ioc.bean.ClassInfo;
 
 import java.io.File;
@@ -11,30 +12,34 @@ import java.util.*;
  * @author luobo.cs@raycloud.com
  * @since 2018/9/6
  */
+@Slf4j
 public class BeanScanner {
 
     /**
      * scan base packages
      *
-     * @param basePackages base packages from user
+     * @param basePackage base packages from user
      * @return final ClassInfo set
      */
-    public Set<ClassInfo> scan(String... basePackages) throws IOException {
+    public Set<ClassInfo> scan(String basePackage) {
         Set<ClassInfo> classInfoSet = new HashSet<>();
-        if (basePackages == null || basePackages.length == 0) {
+        if (basePackage == null) {
             return classInfoSet;
         }
 
-        for (String basePackage : basePackages) {
-            final String filePath = basePackage.replaceAll("\\.", File.separator);
+        final String filePath = basePackage.replaceAll("\\.", File.separator);
+        try {
             Enumeration<URL> resources = this.getClass().getClassLoader().getResources(filePath);
             if (resources.hasMoreElements()) {
                 URL url = resources.nextElement();
                 File file = new File(url.getPath());
                 classInfoSet.addAll(readFromDir(file, filePath));
             }
+            return classInfoSet;
+        } catch (IOException e) {
+            log.warn("scan path:{} occur error:{}", basePackage, e.getMessage());
+            return classInfoSet;
         }
-        return classInfoSet;
     }
 
     private Collection<? extends ClassInfo> readFromDir(File file, String filePath) {
@@ -60,7 +65,9 @@ public class BeanScanner {
         }
         try {
             Class<?> aClass = Class.forName(path);
-            ClassInfo classInfo = new ClassInfo(aClass, aClass.getName());
+            String simpleName = aClass.getSimpleName();
+            ClassInfo classInfo = new ClassInfo(aClass,
+                    simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
             return Optional.of(classInfo);
         } catch (Exception e) {
             e.printStackTrace();

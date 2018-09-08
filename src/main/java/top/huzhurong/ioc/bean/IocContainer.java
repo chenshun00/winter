@@ -16,5 +16,5 @@ public interface IocContainer {
 
     List<String> getBeanNameForType(Class<?> tClass);
 
-    boolean put(String name, Object object);
+    void put(String name, Object object);
 }
