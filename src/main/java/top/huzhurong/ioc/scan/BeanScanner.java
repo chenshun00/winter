@@ -71,7 +71,6 @@ public class BeanScanner {
             return Optional.of(classInfo);
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(2);
             return Optional.empty();
         }
     }

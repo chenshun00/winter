@@ -16,7 +16,6 @@ public class BeanInfo {
             this.name = aClass.getSimpleName();
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(2);
         }
     }
 
