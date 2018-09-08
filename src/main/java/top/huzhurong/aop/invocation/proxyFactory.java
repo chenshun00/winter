@@ -12,21 +12,23 @@ import java.util.List;
  * @since 2018/8/26
  */
 public class proxyFactory {
-    @SuppressWarnings("unchecked")
     private static <T> T createProxy(Object target, Class<T> tClass, List<Advisor> advisors) {
         Enhancer enhancer = new Enhancer();
         enhancer.setCallback((MethodInterceptor) (object, method, args, methodProxy) ->
                 new CglibInvocation(target, object, method, args, methodProxy, advisors).proceed());
         enhancer.setCallbackFilter(method -> 0);
         enhancer.setSuperclass(tClass);
-        return (T) enhancer.create();
+        @SuppressWarnings("unchecked")
+        T proxy = (T) enhancer.create();
+        return proxy;
     }
 
-    @SuppressWarnings("unchecked")
     private static <T> T createJdkProxy(Object target, Class<T> tClass, List<Advisor> advisors) throws IllegalAccessException, InstantiationException {
         ClassLoader classLoader = tClass.getClassLoader();
         JdkProxy jdkProxy = new JdkProxy(target, tClass, advisors);
-        return (T) Proxy.newProxyInstance(classLoader, tClass.getInterfaces(), jdkProxy);
+        @SuppressWarnings("unchecked")
+        T proxy = (T) Proxy.newProxyInstance(classLoader, tClass.getInterfaces(), jdkProxy);
+        return proxy;
     }
 
     public static <T> T newProxy(Object target, Class<T> aClass, List<Advisor> advisorsList) {
