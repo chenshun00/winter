@@ -1,6 +1,7 @@
 package top.huzhurong.ioc.scan;
 
 import lombok.extern.slf4j.Slf4j;
+import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.bean.ClassInfo;
 
 import java.io.File;
@@ -66,8 +67,7 @@ public class BeanScanner {
         try {
             Class<?> aClass = Class.forName(path);
             String simpleName = aClass.getSimpleName();
-            ClassInfo classInfo = new ClassInfo(aClass,
-                    simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1));
+            ClassInfo classInfo = new ClassInfo(aClass, StringUtil.handleClassName(simpleName));
             return Optional.of(classInfo);
         } catch (Exception e) {
             e.printStackTrace();

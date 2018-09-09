@@ -34,9 +34,13 @@ public class DefaultBeanFactory implements InfoBeanFactory {
     }
 
     @Override
-    public boolean register(Set<ClassInfo> classInfoSet) {
+    public void register(Set<ClassInfo> classInfoSet) {
         classInfoSet.forEach(this::accept);
-        return true;
+    }
+
+    @Override
+    public void register(ClassInfo classInfo) {
+        this.accept(classInfo);
     }
 
     @Override

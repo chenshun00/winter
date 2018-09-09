@@ -16,5 +16,7 @@ public interface BeanFactory {
 
     <T> T getBean(String name, Class<T> tClass);
 
-    boolean register(Set<ClassInfo> classInfoSet);
+    void register(Set<ClassInfo> classInfoSet);
+
+    void register(ClassInfo classInfo);
 }

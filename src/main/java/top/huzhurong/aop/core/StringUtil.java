@@ -14,4 +14,13 @@ public class StringUtil {
             }
         });
     }
+
+    public static String handleClassName(Class<?> aClass) {
+        return handleClassName(aClass.getSimpleName());
+    }
+
+    public static String handleClassName(String simpleName) {
+        return simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1);
+    }
+
 }
