@@ -21,7 +21,7 @@ public class AopBeanProcessor extends AbstractBeanProcessor implements BeanProce
      * @return proxy
      */
     @Override
-    public Object processBeforeInit(Object object) {
+    protected Object processSubType(Object object) {
         List<String> beanNameForType = this.beanNameForType();
         List<Advisor> advisorList = new LinkedList<>();
         for (String beanName : beanNameForType) {

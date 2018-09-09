@@ -15,10 +15,9 @@ import java.util.List;
 public class TransactionBeanProcessor extends AbstractBeanProcessor implements BeanProcessor {
 
     @Override
-    public Object processBeforeInit(Object object) {
+    protected Object processSubType(Object object) {
         List<Advisor> advisorsList = new LinkedList<>();
-        List<String> beanNameForType = this.beanNameForType();
-        for (String beanName : beanNameForType) {
+        for (String beanName : this.beanNameForType()) {
             TransactionAdvisor transactionAdvisor = (TransactionAdvisor) this.getIocContainer().getBean(beanName);
             for (Method declaredMethod : object.getClass().getDeclaredMethods()) {
                 if (transactionAdvisor.getPointcut().match(declaredMethod)) {
@@ -26,7 +25,11 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
                 }
             }
         }
-        return proxyFactory.newProxy(object, object.getClass(), advisorsList);
+        if (advisorsList.size() == 0) {
+            return object;
+        } else {
+            return proxyFactory.newProxy(object, object.getClass(), advisorsList);
+        }
     }
 
     @Override

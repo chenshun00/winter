@@ -17,4 +17,8 @@ public interface IocContainer {
     List<String> getBeanNameForType(Class<?> tClass);
 
     void put(String name, Object object);
+
+    Object getIgnoreBean(String name);
+
+    void ignore(String name, Object object);
 }

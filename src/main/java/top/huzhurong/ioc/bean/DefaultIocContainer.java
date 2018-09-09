@@ -17,11 +17,13 @@ public class DefaultIocContainer implements IocContainer {
     private Map<String, Object> context;
     private Map<Class<?>, Object> classContext;
     private Map<Class<?>, String> classNameContext;
+    private Map<String, Object> ignore;
 
     public DefaultIocContainer() {
         context = new ConcurrentHashMap<>(128);
         classContext = new ConcurrentHashMap<>(128);
         classNameContext = new ConcurrentHashMap<>(128);
+        ignore = new ConcurrentHashMap<>(16);
     }
 
     @Override
@@ -43,7 +45,7 @@ public class DefaultIocContainer implements IocContainer {
     public List<String> getBeanNameForType(Class<?> tClass) {
         List<String> beanName = new LinkedList<>();
         classNameContext.forEach((key, value) -> {
-            if (key.isAssignableFrom(tClass)) {
+            if (tClass.isAssignableFrom(key)) {
                 beanName.add(value);
             }
         });
@@ -54,6 +56,18 @@ public class DefaultIocContainer implements IocContainer {
     public void put(String name, Object object) {
         context.put(name, object);
         classContext.put(object.getClass(), object);
-        classNameContext.put(object.getClass(), object.getClass().getSimpleName());
+        classNameContext.put(object.getClass(), name);
     }
+
+    @Override
+    public Object getIgnoreBean(String name) {
+        return ignore.get(name);
+    }
+
+    @Override
+    public void ignore(String name, Object object) {
+        ignore.put(name, object);
+    }
+
+
 }

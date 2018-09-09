@@ -3,12 +3,14 @@ package top.huzhurong.ioc;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Controller;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
 import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.*;
+import top.huzhurong.ioc.bean.aware.IocContainerAware;
 import top.huzhurong.ioc.bean.processor.AopBeanProcessor;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.TransactionBeanProcessor;
@@ -51,8 +53,9 @@ public class Init {
 
     public void instantiation(Set<ClassInfo> classInfoSet) {
         handleConfig(classInfoSet);
-        Set<ClassInfo> collect = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
+        Set<ClassInfo> collect = classInfoSet.stream().filter(this::find).map(this::handleName).collect(Collectors.toSet());
         beanFactory.register(collect);
+        handleAware(collect);
         InfoBeanFactory infoBeanFactory;
         if (beanFactory instanceof InfoBeanFactory) {
             infoBeanFactory = (InfoBeanFactory) beanFactory;
@@ -60,8 +63,39 @@ public class Init {
             throw new ClassCastException("beanFactory can't cast infoBeanFactory");
         }
         List<String> beanNameForType = infoBeanFactory.getBeanNameForType(BeanProcessor.class);
+        //bug
+        for (String beanName : beanNameForType) {
+            BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
+        }
         Set<Object> objectSet = beanNameForType.stream().map(beanName -> processor(beanName, collect)).collect(Collectors.toSet());
         objectSet.stream().filter(this::needInject).forEach(this::inject);
+    }
+
+    private ClassInfo handleName(ClassInfo classInfo) {
+        Bean bean = classInfo.getaClass().getAnnotation(Bean.class);
+        Controller controller = classInfo.getaClass().getAnnotation(Controller.class);
+        Aspectj aspectj = classInfo.getaClass().getAnnotation(Aspectj.class);
+        if (bean != null && controller != null) {
+            throw new IllegalStateException("Bean and Controller Cannot appear simultaneously at ---> "
+                    + classInfo.getaClass().getName());
+        }
+        String name = bean != null ? bean.value() : controller != null ?
+                controller.value() : aspectj != null ? aspectj.value() : null;
+        if (name == null || name.length() == 0) {
+            name = StringUtil.handleClassName(classInfo.getaClass().getSimpleName());
+        }
+        classInfo.setClassName(name);
+        return classInfo;
+    }
+
+    private void handleAware(Set<ClassInfo> classInfoSet) {
+        for (ClassInfo classInfo : classInfoSet) {
+            Object bean = this.getBeanFactory().getBean(classInfo.getClassName());
+            if (bean instanceof IocContainerAware) {
+                IocContainerAware aware = (IocContainerAware) bean;
+                aware.setIocContainer(iocContainer);
+            }
+        }
     }
 
     private void handleConfig(Set<ClassInfo> classInfoSet) {
@@ -78,12 +112,10 @@ public class Init {
         if ("aop".equals(config)) {
             log.info("start handle aop, add AopBeanProcessor.class");
             ClassInfo classInfo = new ClassInfo(AopBeanProcessor.class, StringUtil.handleClassName(AopBeanProcessor.class));
-            this.beanFactory.register(classInfo);
             classInfoSet.add(classInfo);
         } else if ("transaction".equals(config)) {
             log.info("start handle transaction, add TransactionBeanProcessor.class");
             ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtil.handleClassName(TransactionBeanProcessor.class));
-            this.beanFactory.register(classInfo);
             classInfoSet.add(classInfo);
         }
     }
@@ -94,9 +126,9 @@ public class Init {
      * @param beanName     target beanName
      * @param classInfoSet class set should be handled
      */
-    private Set<Object> processor(String beanName, Set<ClassInfo> classInfoSet) {
+    private Object processor(String beanName, Set<ClassInfo> classInfoSet) {
         BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
-        return classInfoSet.stream().map(beanProcessor::processBeforeInit).collect(Collectors.toSet());
+        return classInfoSet.stream().map(beanProcessor::processBeforeInit);
     }
 
     /**
@@ -156,6 +188,9 @@ public class Init {
                 return false;
             }
             if (annotation.getClass().isAssignableFrom(Controller.class)) {
+                return false;
+            }
+            if (annotation.getClass().isAssignableFrom(Aspectj.class)) {
                 return false;
             }
         }
