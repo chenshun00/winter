@@ -3,7 +3,9 @@ package top.huzhurong.ioc;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.annotation.Aspectj;
+import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Controller;
@@ -52,9 +54,14 @@ public class Init {
     }
 
     public void instantiation(Set<ClassInfo> classInfoSet) {
+        //handle transaction and aop config
         handleConfig(classInfoSet);
+        //handle bean name
         Set<ClassInfo> collect = classInfoSet.stream().filter(this::find).map(this::handleName).collect(Collectors.toSet());
+        //register to ioc
         beanFactory.register(collect);
+        handleAspectj(classInfoSet);
+        //handle aware interface
         handleAware(collect);
         InfoBeanFactory infoBeanFactory;
         if (beanFactory instanceof InfoBeanFactory) {
@@ -62,13 +69,37 @@ public class Init {
         } else {
             throw new ClassCastException("beanFactory can't cast infoBeanFactory");
         }
+        //get BeanProcessor class set
         List<String> beanNameForType = infoBeanFactory.getBeanNameForType(BeanProcessor.class);
-        //bug
-        for (String beanName : beanNameForType) {
-            BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
+        for (ClassInfo classInfo : collect) {
+            for (String beanName : beanNameForType) {
+                BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
+                Object bean = beanProcessor.processBeforeInit(this.beanFactory.getBean(classInfo.getClassName()));
+                beanFactory.put(classInfo.getClassName(), bean);
+            }
         }
-        Set<Object> objectSet = beanNameForType.stream().map(beanName -> processor(beanName, collect)).collect(Collectors.toSet());
-        objectSet.stream().filter(this::needInject).forEach(this::inject);
+        collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
+    }
+
+    /**
+     * handle aspectj
+     *
+     * @param classInfoSet bean set
+     */
+    private void handleAspectj(Set<ClassInfo> classInfoSet) {
+        Iterator<ClassInfo> iterator = classInfoSet.iterator();
+        List<Object> advisors = new LinkedList<>();
+        while (iterator.hasNext()) {
+            ClassInfo classInfo = iterator.next();
+            if (classInfo.getaClass().getAnnotation(Aspectj.class) != null) {
+                advisors.add(this.beanFactory.getBean(classInfo.getClassName()));
+                iterator.remove();
+            }
+        }
+        List<Advisor> advisorList = AspectjParser.parserAspectj(advisors);
+        Set<ClassInfo> collect = advisorList.stream().map(advisor -> new ClassInfo(advisor.getClass(), advisor.toString()))
+                .collect(Collectors.toSet());
+        classInfoSet.addAll(collect);
     }
 
     private ClassInfo handleName(ClassInfo classInfo) {
@@ -118,17 +149,6 @@ public class Init {
             ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtil.handleClassName(TransactionBeanProcessor.class));
             classInfoSet.add(classInfo);
         }
-    }
-
-    /**
-     * processor
-     *
-     * @param beanName     target beanName
-     * @param classInfoSet class set should be handled
-     */
-    private Object processor(String beanName, Set<ClassInfo> classInfoSet) {
-        BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
-        return classInfoSet.stream().map(beanProcessor::processBeforeInit);
     }
 
     /**
@@ -183,19 +203,12 @@ public class Init {
 
     private boolean find(ClassInfo classInfo) {
         Annotation[] annotations = classInfo.getaClass().getAnnotations();
-        for (Annotation annotation : annotations) {
-            if (annotation.getClass().isAssignableFrom(Bean.class)) {
-                return false;
-            }
-            if (annotation.getClass().isAssignableFrom(Controller.class)) {
-                return false;
-            }
-            if (annotation.getClass().isAssignableFrom(Aspectj.class)) {
-                return false;
-            }
-        }
-        return true;
-
+        for (Annotation annotation : annotations)
+            if (annotation.getClass().getAnnotation(Bean.class) != null) {
+                return true;
+            } else if (annotation.getClass().getAnnotation(Controller.class) != null) {
+                return true;
+            } else return annotation.getClass().getAnnotation(Aspectj.class) != null;
+        return false;
     }
-
 }

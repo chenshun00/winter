@@ -42,6 +42,11 @@ public class DefaultBeanFactory implements InfoBeanFactory {
     }
 
     @Override
+    public void put(String name, Object object) {
+        this.iocContainer.put(name, object);
+    }
+
+    @Override
     public List<String> getBeanNameForType(Class<?> type) {
         return iocContainer.getBeanNameForType(type);
     }

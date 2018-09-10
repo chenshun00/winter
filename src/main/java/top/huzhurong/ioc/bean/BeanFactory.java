@@ -19,4 +19,6 @@ public interface BeanFactory {
     Set<ClassInfo> register(Set<ClassInfo> classInfoSet);
 
     void register(ClassInfo classInfo);
+
+    void put(String name, Object object);
 }

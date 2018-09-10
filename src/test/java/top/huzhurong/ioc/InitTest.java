@@ -8,6 +8,8 @@ import top.huzhurong.ioc.bean.BeanFactory;
 import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.scan.test.TestScan1;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -40,7 +42,6 @@ public class InitTest {
         BeanFactory beanFactory = init.getBeanFactory();
         TestScan1 testScan1 = (TestScan1) beanFactory.getBean("hhh");
         System.out.println(testScan1);
-        testScan1.hi();
         testScan1.hello();
     }
 
@@ -48,5 +49,11 @@ public class InitTest {
     public void className() {
         String simpleName = InitTest.class.getSimpleName();
         Assert.assertEquals("InitTest", simpleName);
+    }
+
+    @Test
+    public void filter() {
+        List<Integer> integers = Arrays.asList(1, 2, 3, 4);
+        integers.stream().filter(integer -> integer >= 2).forEach(System.out::println);
     }
 }

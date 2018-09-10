@@ -13,6 +13,10 @@ public class TestScan1 {
     @Inject
     private TestScan2 testScan2;
 
+    public void setTestScan2(TestScan2 testScan2) {
+        this.testScan2 = testScan2;
+    }
+
     public void hi() {
         System.out.println("----# hi TestScan1 #----");
     }
