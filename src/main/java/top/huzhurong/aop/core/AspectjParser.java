@@ -9,7 +9,10 @@ import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
-import top.huzhurong.aop.annotation.*;
+import top.huzhurong.aop.annotation.After;
+import top.huzhurong.aop.annotation.Around;
+import top.huzhurong.aop.annotation.Aspectj;
+import top.huzhurong.aop.annotation.Before;
 import top.huzhurong.aop.invocation.proxyFactory;
 
 import java.lang.annotation.Annotation;
@@ -34,13 +37,7 @@ public class AspectjParser {
      * @return advisor list
      */
     public static List<Advisor> parserAspectj(List<Object> aspectjList) {
-        aspectjList.sort((aspectj1, aspectj2) -> {
-            Order first = aspectj1.getClass().getAnnotation(Order.class);
-            Order second = aspectj2.getClass().getAnnotation(Order.class);
-            int firstOrder = first == null ? Integer.MAX_VALUE : first.value();
-            int secondOrder = second == null ? Integer.MAX_VALUE : second.value();
-            return Integer.compare(firstOrder, secondOrder);
-        });
+        aspectjList.sort(new OrderConparator());
         List<Advisor> advisorList = new LinkedList<>();
         aspectjList.forEach(as -> advisorList.addAll(parserAspectj(as.getClass(), as)));
         advisorList.addAll(dealTransactionAdvisor());
@@ -50,8 +47,8 @@ public class AspectjParser {
     /**
      * 解析切面，尚未实现ioc只能采取目前之中方法，如果实现了ioc就可以添加 beanProcessor 前后置处理
      *
-     * @param aClass 切面对象
-     * @return 切面集合
+     * @param aClass aspectj bean
+     * @return advisor list
      */
     public static List<Advisor> parserAspectj(Class<?> aClass, Object object) {
         if (aClass == null) {

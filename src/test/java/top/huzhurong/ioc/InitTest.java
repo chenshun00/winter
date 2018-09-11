@@ -41,7 +41,7 @@ public class InitTest {
         init.instantiation(classInfoSet);
         BeanFactory beanFactory = init.getBeanFactory();
         TestScan1 testScan1 = (TestScan1) beanFactory.getBean("hhh");
-        System.out.println(testScan1);
+        System.out.println(testScan1.getClass().getSimpleName());
         testScan1.hello();
     }
 

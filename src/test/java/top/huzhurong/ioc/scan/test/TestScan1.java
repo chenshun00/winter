@@ -13,16 +13,9 @@ public class TestScan1 {
     @Inject
     private TestScan2 testScan2;
 
-    public void setTestScan2(TestScan2 testScan2) {
-        this.testScan2 = testScan2;
-    }
-
-    public void hi() {
-        System.out.println("----# hi TestScan1 #----");
-    }
-
     public void hello() {
         System.out.println("----# start invoke testScan2's hello method #----");
+        System.out.println(testScan2);
         testScan2.hello();
         System.out.println("----# end invoke testScan2's hello method #----");
     }

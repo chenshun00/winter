@@ -1,5 +1,10 @@
 package top.huzhurong.ioc.bean;
 
+import top.huzhurong.aop.advisor.Advisor;
+import top.huzhurong.aop.annotation.Aspectj;
+import top.huzhurong.aop.core.AspectjParser;
+import top.huzhurong.aop.core.NameGenerator;
+
 import java.util.List;
 import java.util.Set;
 
@@ -52,8 +57,16 @@ public class DefaultBeanFactory implements InfoBeanFactory {
     }
 
     private void accept(ClassInfo info) {
+
         try {
-            iocContainer.put(info.getClassName(), info.getaClass().newInstance());
+            Object instance = info.getaClass().newInstance();
+            iocContainer.put(info.getClassName(), instance);
+            if (info.getaClass().getAnnotation(Aspectj.class) != null) {
+                List<Advisor> advisorList = AspectjParser.parserAspectj(info.getaClass(), instance);
+                for (Advisor advisor : advisorList) {
+                    iocContainer.put(NameGenerator.generator(advisor), advisor);
+                }
+            }
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }

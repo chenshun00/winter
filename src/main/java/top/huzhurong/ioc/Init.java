@@ -54,10 +54,11 @@ public class Init {
     }
 
     public void instantiation(Set<ClassInfo> classInfoSet) {
+        Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
         //handle transaction and aop config
-        handleConfig(classInfoSet);
+        handleConfig(info);
         //handle bean name
-        Set<ClassInfo> collect = classInfoSet.stream().filter(this::find).map(this::handleName).collect(Collectors.toSet());
+        Set<ClassInfo> collect = info.stream().map(this::handleName).collect(Collectors.toSet());
         //register to ioc
         beanFactory.register(collect);
         handleAspectj(classInfoSet);
@@ -78,6 +79,7 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
+        System.out.println(beanFactory.getBean("testScan2"));
         collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
     }
 
@@ -178,7 +180,8 @@ public class Init {
         } else {
             ff.setAccessible(true);
             try {
-                ff.set(this.beanFactory.getBean(object.getClass()), bean);
+                System.out.println(object);
+                ff.set(object, bean);
             } catch (Exception e) {
                 log.error("inject failed," + e);
             }
@@ -195,6 +198,7 @@ public class Init {
         Field[] declaredFields = object.getClass().getDeclaredFields();
         for (Field declaredField : declaredFields) {
             if (declaredField.getAnnotation(Inject.class) != null) {
+                System.out.println("需要注入:" + object);
                 return true;
             }
         }
@@ -203,12 +207,15 @@ public class Init {
 
     private boolean find(ClassInfo classInfo) {
         Annotation[] annotations = classInfo.getaClass().getAnnotations();
-        for (Annotation annotation : annotations)
-            if (annotation.getClass().getAnnotation(Bean.class) != null) {
+        for (Annotation ignored : annotations) {
+            if (classInfo.getaClass().getAnnotation(Bean.class) != null) {
                 return true;
-            } else if (annotation.getClass().getAnnotation(Controller.class) != null) {
+            } else if (classInfo.getaClass().getAnnotation(Controller.class) != null) {
                 return true;
-            } else return annotation.getClass().getAnnotation(Aspectj.class) != null;
+            } else {
+                return classInfo.getaClass().getAnnotation(Aspectj.class) != null;
+            }
+        }
         return false;
     }
 }
