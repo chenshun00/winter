@@ -79,8 +79,17 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
-        System.out.println(beanFactory.getBean("testScan2"));
-        collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
+        List<Object> initInfo = collect.stream()
+                .map(ClassInfo::getClassName)
+                .map(beanFactory::getBean)
+                .collect(Collectors.toList());
+
+        for (Object object : initInfo) {
+            if (needInject(object)) {
+                inject(object);
+            }
+        }
+
     }
 
     /**
@@ -157,7 +166,12 @@ public class Init {
      * inject target bean
      */
     private void inject(Object object) {
-        Field[] declaredFields = object.getClass().getDeclaredFields();
+        Field[] declaredFields;
+        if (object.getClass().getSimpleName().contains("$$")) {
+            declaredFields = object.getClass().getSuperclass().getDeclaredFields();
+        } else {
+            declaredFields = object.getClass().getDeclaredFields();
+        }
         Arrays.stream(declaredFields)
                 .filter(field -> field.getAnnotation(Inject.class) != null)
                 .forEach(ff -> {
@@ -180,7 +194,6 @@ public class Init {
         } else {
             ff.setAccessible(true);
             try {
-                System.out.println(object);
                 ff.set(object, bean);
             } catch (Exception e) {
                 log.error("inject failed," + e);
@@ -195,10 +208,15 @@ public class Init {
      * @return true exist or false not exist
      */
     private boolean needInject(Object object) {
-        Field[] declaredFields = object.getClass().getDeclaredFields();
+        Field[] declaredFields;
+        if (object.getClass().getSimpleName().contains("$$")) {
+            declaredFields = object.getClass().getSuperclass().getDeclaredFields();
+        } else {
+            declaredFields = object.getClass().getDeclaredFields();
+        }
+
         for (Field declaredField : declaredFields) {
             if (declaredField.getAnnotation(Inject.class) != null) {
-                System.out.println("需要注入:" + object);
                 return true;
             }
         }

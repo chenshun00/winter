@@ -14,10 +14,9 @@ public class TestScan1 {
     private TestScan2 testScan2;
 
     public void hello() {
-        System.out.println("----# start invoke testScan2's hello method #----");
-        System.out.println(testScan2);
+        System.out.println("----# start invoke testScan1's hello method #----");
         testScan2.hello();
-        System.out.println("----# end invoke testScan2's hello method #----");
+        System.out.println("----# end invoke testScan1's hello method #----");
     }
 
 }

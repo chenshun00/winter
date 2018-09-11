@@ -1,6 +1,6 @@
 package top.huzhurong.aop.core;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.UUID;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -8,9 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NameGenerator {
 
-    private static AtomicLong count = new AtomicLong(1);
-
     public static String generator(Object object) {
-        return object.getClass().getSimpleName() + "#" + count.getAndIncrement();
+        return object.getClass().getSimpleName() + "#" + UUID.randomUUID().toString().split("-")[2];
     }
 }
