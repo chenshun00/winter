@@ -3,12 +3,14 @@ package top.huzhurong.ioc.scan.test.AspectjTest;
 import top.huzhurong.aop.annotation.After;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.annotation.Before;
+import top.huzhurong.aop.annotation.Order;
 
 /**
  * @author luobo.cs@raycloud.com
  * @since 2018/9/10
  */
 @Aspectj
+@Order(1)
 public class AspectjSecond {
     @Before("public void top.huzhurong.ioc.scan.test.TestScan1 hello()")
     public void before() {

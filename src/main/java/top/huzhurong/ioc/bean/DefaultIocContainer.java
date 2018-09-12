@@ -1,5 +1,8 @@
 package top.huzhurong.ioc.bean;
 
+import top.huzhurong.aop.annotation.Aspectj;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +24,6 @@ public class DefaultIocContainer implements IocContainer {
     public DefaultIocContainer() {
         context = new ConcurrentHashMap<>(128);
         classContext = new ConcurrentHashMap<>(128);
-        ignore = new ConcurrentHashMap<>(16);
     }
 
     @Override
@@ -56,15 +58,15 @@ public class DefaultIocContainer implements IocContainer {
         classContext.put(object.getClass(), object);
     }
 
-    @Override
-    public Object getIgnoreBean(String name) {
-        return ignore.get(name);
-    }
 
-    @Override
-    public void ignore(String name, Object object) {
-        ignore.put(name, object);
+    public List<Object> aspectj() {
+        List<Object> objects = new ArrayList<>();
+        context.forEach((key, value) -> {
+            if (value.getClass().getDeclaredAnnotation(Aspectj.class) != null) {
+                objects.add(value);
+            }
+        });
+        return objects;
     }
-
 
 }

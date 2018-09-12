@@ -71,4 +71,13 @@ public class DefaultBeanFactory implements InfoBeanFactory {
             e.printStackTrace();
         }
     }
+
+
+    public IocContainer getIocContainer() {
+        return iocContainer;
+    }
+
+    public void setIocContainer(IocContainer iocContainer) {
+        this.iocContainer = iocContainer;
+    }
 }

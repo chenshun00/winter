@@ -4,6 +4,7 @@ import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
+import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.invocation.proxyFactory;
 
 import java.lang.reflect.Method;
@@ -22,12 +23,8 @@ public class AopBeanProcessor extends AbstractBeanProcessor implements BeanProce
      */
     @Override
     protected Object processSubType(Object object) {
-        List<String> beanNameForType = this.beanNameForType();
-        List<Advisor> advisorList = new LinkedList<>();
-        for (String beanName : beanNameForType) {
-            advisorList.add((Advisor) getIocContainer().getBean(beanName));
-        }
-        return findApplyAdvisor(object, advisorList);
+        List<Object> aspectj = getIocContainer().aspectj();
+        return findApplyAdvisor(object, AspectjParser.parserAspectj(aspectj));
     }
 
 

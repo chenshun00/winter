@@ -18,7 +18,5 @@ public interface IocContainer {
 
     void put(String name, Object object);
 
-    Object getIgnoreBean(String name);
-
-    void ignore(String name, Object object);
+    List<Object> aspectj();
 }

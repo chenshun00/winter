@@ -18,7 +18,6 @@ import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.TransactionBeanProcessor;
 import top.huzhurong.ioc.scan.BeanScanner;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -79,6 +78,7 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
+        System.out.println("testScan1:" + beanFactory.getBean("hhh"));
         List<Object> initInfo = collect.stream()
                 .map(ClassInfo::getClassName)
                 .map(beanFactory::getBean)
@@ -224,16 +224,12 @@ public class Init {
     }
 
     private boolean find(ClassInfo classInfo) {
-        Annotation[] annotations = classInfo.getaClass().getAnnotations();
-        for (Annotation ignored : annotations) {
-            if (classInfo.getaClass().getAnnotation(Bean.class) != null) {
-                return true;
-            } else if (classInfo.getaClass().getAnnotation(Controller.class) != null) {
-                return true;
-            } else {
-                return classInfo.getaClass().getAnnotation(Aspectj.class) != null;
-            }
+        if (classInfo.getaClass().getAnnotation(Bean.class) != null) {
+            return true;
+        } else if (classInfo.getaClass().getAnnotation(Controller.class) != null) {
+            return true;
+        } else {
+            return classInfo.getaClass().getAnnotation(Aspectj.class) != null;
         }
-        return false;
     }
 }
