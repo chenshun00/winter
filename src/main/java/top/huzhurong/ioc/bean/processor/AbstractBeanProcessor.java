@@ -18,7 +18,7 @@ public abstract class AbstractBeanProcessor implements BeanProcessor, IocContain
     private IocContainer iocContainer;
 
     @Override
-    public Object processBeforeInit(Object object) {
+    public Object processAfterInit(Object object) {
         if (isInfrastructure(object)) {
             return object;
         }

@@ -23,7 +23,7 @@ public class proxyFactory {
         return proxy;
     }
 
-    private static <T> T createJdkProxy(Object target, Class<T> tClass, List<Advisor> advisors) throws IllegalAccessException, InstantiationException {
+    private static <T> T createJdkProxy(Object target, Class<T> tClass, List<Advisor> advisors) {
         ClassLoader classLoader = tClass.getClassLoader();
         JdkProxy jdkProxy = new JdkProxy(target, tClass, advisors);
         @SuppressWarnings("unchecked")
@@ -35,12 +35,7 @@ public class proxyFactory {
         if (aClass.getInterfaces().length == 0 && aClass.getSuperclass().equals(Object.class)) {
             return createProxy(target, aClass, advisorsList);
         } else if (aClass.getInterfaces().length != 0) {
-            try {
-                return createJdkProxy(target, aClass, advisorsList);
-            } catch (IllegalAccessException | InstantiationException e) {
-                e.printStackTrace();
-                return null;
-            }
+            return createJdkProxy(target, aClass, advisorsList);
         } else {
             throw new RuntimeException(aClass + " 不能被cglib或者jdk代理!");
         }

@@ -36,7 +36,14 @@
 
 5、处理InitializingBean后置实现 afterPropertiesSet,自定义 init 方法，init方法在后边
 
-6、beanPostProcessor init后置处理 BeanPostProcessorsAfterInitialization
+6、beanPostProcessor init后置处理 BeanPostProcessorsAfterInitialization,bean对象可能在这里包装成代理
 
 
 >ps:实力不够，所以在Spring上进行一次变种，极大的简化了这一层面的操作
+
+### 问题
+  
+1、使用 `cglib` 和 `jdk proxy` 的时候，两者的实现动态代理的原理是不一致的，`cglib` 使用继承父类的的形式展开，这样我们就可以通过向上
+转型(cast)将该代理(子类)转型为父类。而 `jdk proxy` 则采取了另一种形式，实现相同的接口，这就是为什么 `jdk proxy` 一定需要接口的原因，如果没有接口那么就代理
+失败，正式因为通过实现接口的方式导致了它只能转型为实现的接口，如果转型为子类的那么就会出现，  `$proxy0 cast xxx.xxx.xx` 的异常信息，
+可以到这里看看 `jdk proxy` 生成的 `$proxy0` -----> [$proxy0](https://git.io/fAKeS)  

@@ -12,6 +12,8 @@ import top.huzhurong.ioc.annotation.Controller;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
 import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.*;
+import top.huzhurong.ioc.bean.aware.BeanFactoryAware;
+import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
 import top.huzhurong.ioc.bean.processor.AopBeanProcessor;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
@@ -78,19 +80,26 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
-        System.out.println("testScan1:" + beanFactory.getBean("hhh"));
-        List<Object> initInfo = collect.stream()
-                .map(ClassInfo::getClassName)
-                .map(beanFactory::getBean)
-                .collect(Collectors.toList());
-
-        for (Object object : initInfo) {
-            if (needInject(object)) {
-                inject(object);
+        initBean(collect);
+        for (ClassInfo classInfo : collect) {
+            for (String beanName : beanNameForType) {
+                BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
+                Object bean = beanProcessor.processAfterInit(this.beanFactory.getBean(classInfo.getClassName()));
+                beanFactory.put(classInfo.getClassName(), bean);
             }
         }
-
+        collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
     }
+
+    private void initBean(Set<ClassInfo> collect) {
+        collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean)
+                .filter(bean -> (bean instanceof InitAware))
+                .forEach(bean -> {
+                    InitAware aware = (InitAware) bean;
+                    aware.initBean();
+                });
+    }
+
 
     /**
      * handle aspectj
@@ -136,6 +145,9 @@ public class Init {
             if (bean instanceof IocContainerAware) {
                 IocContainerAware aware = (IocContainerAware) bean;
                 aware.setIocContainer(iocContainer);
+            } else if (bean instanceof BeanFactoryAware) {
+                BeanFactoryAware aware = (BeanFactoryAware) bean;
+                aware.setBeanFactory(beanFactory);
             }
         }
     }

@@ -12,5 +12,11 @@ public interface BeanProcessor {
      * @param object origin bean or target
      * @return maybe origin bean, maybe the wrapper bean like proxy
      */
-    Object processBeforeInit(Object object);
+    default Object processBeforeInit(Object object) {
+        return object;
+    }
+
+    default Object processAfterInit(Object object) {
+        return object;
+    }
 }
