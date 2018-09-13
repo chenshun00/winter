@@ -2,7 +2,7 @@ package top.huzhurong.ioc.bean.processor;
 
 import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
-import top.huzhurong.aop.invocation.proxyFactory;
+import top.huzhurong.aop.invocation.ProxyFactory;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -28,7 +28,7 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
         if (advisorsList.size() == 0) {
             return object;
         } else {
-            return proxyFactory.newProxy(object, object.getClass(), advisorsList);
+            return ProxyFactory.newProxy(object, object.getClass(), advisorsList);
         }
     }
 

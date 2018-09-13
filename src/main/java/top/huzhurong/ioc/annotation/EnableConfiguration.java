@@ -13,4 +13,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 public @interface EnableConfiguration {
     String[] value() default {"aop", "transaction"};
+
+    /**
+     * use cglib as default model
+     */
+    boolean proxyByClass() default true;
+
 }

@@ -9,7 +9,7 @@ import top.huzhurong.ioc.bean.aware.InitAware;
  * @since 2018/9/8
  */
 @Bean("hhh")
-public class TestScan1 implements InitAware {
+public class TestScan1 implements InitAware, AAA {
 
     @Inject
     private TestScan2 testScan2;
@@ -23,5 +23,10 @@ public class TestScan1 implements InitAware {
     @Override
     public void initBean() {
         System.out.println("----# testScan1's initAware interface #----");
+    }
+
+    @Override
+    public void gg() {
+        testScan2.hello();
     }
 }

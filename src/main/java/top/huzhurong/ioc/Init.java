@@ -9,15 +9,13 @@ import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Controller;
-import top.huzhurong.ioc.annotation.EnableConfiguration;
 import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.*;
 import top.huzhurong.ioc.bean.aware.BeanFactoryAware;
 import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
-import top.huzhurong.ioc.bean.processor.AopBeanProcessor;
+import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
-import top.huzhurong.ioc.bean.processor.TransactionBeanProcessor;
 import top.huzhurong.ioc.scan.BeanScanner;
 
 import java.lang.reflect.Field;
@@ -57,7 +55,7 @@ public class Init {
     public void instantiation(Set<ClassInfo> classInfoSet) {
         Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
         //handle transaction and aop config
-        handleConfig(info);
+        AopConfigUtil.handleConfig(info, bootClass);
         //handle bean name
         Set<ClassInfo> collect = info.stream().map(this::handleName).collect(Collectors.toSet());
         //register to ioc
@@ -80,6 +78,12 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
+        /*
+         * fix jdk proxy bug,bring cglib proxy bug
+         */
+        if (!AopConfigUtil.proxyByClass) {
+            collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
+        }
         initBean(collect);
         for (ClassInfo classInfo : collect) {
             for (String beanName : beanNameForType) {
@@ -88,7 +92,9 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
-        collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
+        if (AopConfigUtil.proxyByClass) {
+            collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
+        }
     }
 
     private void initBean(Set<ClassInfo> collect) {
@@ -152,34 +158,12 @@ public class Init {
         }
     }
 
-    private void handleConfig(Set<ClassInfo> classInfoSet) {
-        Class<?> aClass = Objects.requireNonNull(bootClass, "bootClass can't be null");
-        EnableConfiguration declaredAnnotation = aClass.getDeclaredAnnotation(EnableConfiguration.class);
-        if (declaredAnnotation != null) {
-            Arrays.stream(declaredAnnotation.value())
-                    .filter(str -> !str.isEmpty())
-                    .forEach(config -> this.doConfig(config, classInfoSet));
-        }
-    }
-
-    private void doConfig(String config, Set<ClassInfo> classInfoSet) {
-        if ("aop".equals(config)) {
-            log.info("start handle aop, add AopBeanProcessor.class");
-            ClassInfo classInfo = new ClassInfo(AopBeanProcessor.class, StringUtil.handleClassName(AopBeanProcessor.class));
-            classInfoSet.add(classInfo);
-        } else if ("transaction".equals(config)) {
-            log.info("start handle transaction, add TransactionBeanProcessor.class");
-            ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtil.handleClassName(TransactionBeanProcessor.class));
-            classInfoSet.add(classInfo);
-        }
-    }
-
     /**
      * inject target bean
      */
     private void inject(Object object) {
         Field[] declaredFields;
-        if (object.getClass().getSimpleName().contains("$$")) {
+        if (AopConfigUtil.isCglibProxyClass(object.getClass())) {
             declaredFields = object.getClass().getSuperclass().getDeclaredFields();
         } else {
             declaredFields = object.getClass().getDeclaredFields();

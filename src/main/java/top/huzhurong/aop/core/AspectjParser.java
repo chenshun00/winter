@@ -13,7 +13,7 @@ import top.huzhurong.aop.annotation.After;
 import top.huzhurong.aop.annotation.Around;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.annotation.Before;
-import top.huzhurong.aop.invocation.proxyFactory;
+import top.huzhurong.aop.invocation.ProxyFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -132,7 +132,7 @@ public class AspectjParser {
         if (advisorsList.size() == 0) {
             return object;
         } else {
-            return proxyFactory.newProxy(object, object.getClass(), advisorsList);
+            return ProxyFactory.newProxy(object, object.getClass(), advisorsList);
         }
     }
 

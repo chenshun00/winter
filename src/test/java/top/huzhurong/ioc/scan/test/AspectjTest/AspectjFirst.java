@@ -11,13 +11,13 @@ import top.huzhurong.aop.annotation.Before;
 @Aspectj
 public class AspectjFirst {
 
-    @Before("public void top.huzhurong.ioc.scan.test.TestScan1 hello()")
+    @Before("public void top.huzhurong.ioc.scan.test.TestScan1 gg()")
     public void before() {
         System.out.println("----* ^v^ AspectjFirst aspectj before TestScan1 ^v^ *----");
     }
 
 
-    @After("public void top.huzhurong.ioc.scan.test.TestScan1 hello()")
+    @After("public void top.huzhurong.ioc.scan.test.TestScan1 gg()")
     public void after() {
         System.out.println("----* ^8^ AspectjFirst aspectj after TestScan1 ^8^ *----");
     }

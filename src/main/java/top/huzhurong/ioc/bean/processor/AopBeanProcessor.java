@@ -5,7 +5,7 @@ import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 import top.huzhurong.aop.core.AspectjParser;
-import top.huzhurong.aop.invocation.proxyFactory;
+import top.huzhurong.aop.invocation.ProxyFactory;
 
 import java.lang.reflect.Method;
 import java.util.LinkedList;
@@ -58,7 +58,7 @@ public class AopBeanProcessor extends AbstractBeanProcessor implements BeanProce
         if (advisorsList.size() == 0) {
             return object;
         } else {
-            return proxyFactory.newProxy(object, object.getClass(), advisorsList);
+            return ProxyFactory.newProxy(object, object.getClass(), advisorsList);
         }
     }
 }

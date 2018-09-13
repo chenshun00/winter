@@ -3,6 +3,7 @@ package top.huzhurong.aop.invocation;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import top.huzhurong.aop.advisor.Advisor;
+import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/26
  */
-public class proxyFactory {
+public class ProxyFactory {
     private static <T> T createProxy(Object target, Class<T> tClass, List<Advisor> advisors) {
         Enhancer enhancer = new Enhancer();
         enhancer.setCallback((MethodInterceptor) (object, method, args, methodProxy) ->
@@ -32,6 +33,9 @@ public class proxyFactory {
     }
 
     public static <T> T newProxy(Object target, Class<T> aClass, List<Advisor> advisorsList) {
+        if (AopConfigUtil.proxyByClass) {
+            return createProxy(target, aClass, advisorsList);
+        }
         if (aClass.getInterfaces().length == 0 && aClass.getSuperclass().equals(Object.class)) {
             return createProxy(target, aClass, advisorsList);
         } else if (aClass.getInterfaces().length != 0) {
