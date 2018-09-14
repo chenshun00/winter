@@ -47,3 +47,8 @@
 转型(cast)将该代理(子类)转型为父类。而 `jdk proxy` 则采取了另一种形式，实现相同的接口，这就是为什么 `jdk proxy` 一定需要接口的原因，如果没有接口那么就代理
 失败，正式因为通过实现接口的方式导致了它只能转型为实现的接口，如果转型为子类的那么就会出现，  `$proxy0 cast xxx.xxx.xx` 的异常信息，
 可以到这里看看 `jdk proxy` 生成的 `$proxy0` -----> [$proxy0](https://git.io/fAKeS)  
+
+
+2、为什么 `jdk代理` 和 `cglib代理` 注入的时机不一致，jdk 注入的时候是在生成代理之前，因为生成代理的时候是实现的接口，而接口是没有 `setXXX` 的 `set方法` 的，而 `cglib` 的注入是采用继承去实现的
+如果先注入后继承，发现存在原先注入的字段为null了，经过查看发现不是我写的bug，而是cglib本身传递的就是xxx.class，没有将对象传递进去，导致它的字段为null，为此
+我重写了一下  `cglib` 的一个方法，才获取原先注入的 `field`，可以在这里看我提的 `issue` ---> [cglib issue](https://github.com/cglib/cglib/issues/134)
