@@ -1,6 +1,8 @@
 package top.huzhurong.ioc.bean.processor;
 
 import lombok.extern.slf4j.Slf4j;
+import top.huzhurong.aop.advisor.transaction.TransactionManager;
+import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
 import top.huzhurong.ioc.bean.ClassInfo;
@@ -38,7 +40,9 @@ public class AopConfigUtil {
         } else if ("transaction".equals(config)) {
             log.info("start handle transaction, add TransactionBeanProcessor.class");
             ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtil.handleClassName(TransactionBeanProcessor.class));
+            ClassInfo transaction = new ClassInfo(JdbcTransactionManager.class, StringUtil.handleClassName(TransactionManager.class));
             classInfoSet.add(classInfo);
+            classInfoSet.add(transaction);
         }
     }
 

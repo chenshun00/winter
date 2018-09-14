@@ -22,10 +22,10 @@ public abstract class InitTest {
 
     @Before
     public void before() {
-        init.setBootClass(InitTest.class);
-        Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc.scan.test");
-        init.instantiation(classInfoSet);
-        beanFactory = init.getBeanFactory();
+//        init.setBootClass(InitTest.class);
+//        Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc.scan.test");
+//        init.instantiation(classInfoSet);
+//        beanFactory = init.getBeanFactory();
     }
 
     @Test

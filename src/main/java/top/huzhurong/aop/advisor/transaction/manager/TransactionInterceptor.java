@@ -35,7 +35,7 @@ public class TransactionInterceptor {
         log.info("成功获取事务");
         Object invoke = null;
         try {
-            invoke = abstractInvocation.getMethod().invoke(object, abstractInvocation.getArgs());
+            invoke = abstractInvocation.getMethod().invoke(abstractInvocation.getProxy(), abstractInvocation.getArgs());
             commitTransactionAfterReturning(transaction);
         } catch (Throwable e) {
             log.error("事务处理出现异常:{},开始进行事务回滚", e.getMessage());

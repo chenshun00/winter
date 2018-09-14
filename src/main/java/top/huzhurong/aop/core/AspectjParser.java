@@ -40,7 +40,7 @@ public class AspectjParser {
         aspectjList.sort(new OrderConparator());
         List<Advisor> advisorList = new LinkedList<>();
         aspectjList.forEach(as -> advisorList.addAll(parserAspectj(as.getClass(), as)));
-        advisorList.addAll(dealTransactionAdvisor());
+//        advisorList.addAll(dealTransactionAdvisor());
         return advisorList;
     }
 
@@ -79,7 +79,7 @@ public class AspectjParser {
     /**
      * Temporary processing transaction , if we add ioc and more feature will add a flag to support if we use transaction
      */
-    private static List<Advisor> dealTransactionAdvisor() {
+    public static List<Advisor> dealTransactionAdvisor() {
         List<Advisor> advisors = new LinkedList<>();
         TransactionManager transactionManager = new JdbcTransactionManager();
         TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);

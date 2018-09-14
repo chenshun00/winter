@@ -1,7 +1,9 @@
 package top.huzhurong.ioc.bean.processor;
 
 import top.huzhurong.aop.advisor.Advisor;
+import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
+import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.invocation.ProxyFactory;
 
 import java.lang.reflect.Method;
@@ -17,12 +19,14 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
     @Override
     protected Object processSubType(Object object) {
         List<Advisor> advisorsList = new LinkedList<>();
-        for (String beanName : this.beanNameForType()) {
-            TransactionAdvisor transactionAdvisor = (TransactionAdvisor) this.getIocContainer().getBean(beanName);
-            for (Method declaredMethod : object.getClass().getDeclaredMethods()) {
-                if (transactionAdvisor.getPointcut().match(declaredMethod)) {
-                    advisorsList.add(transactionAdvisor);
-                }
+        TransactionAdvisor bean = this.getIocContainer().getBean(TransactionAdvisor.class);
+        if (bean == null) {
+            bean = dealTransactionAdvisor();
+            this.getIocContainer().put("transactionAdvisor", bean);
+        }
+        for (Method declaredMethod : object.getClass().getDeclaredMethods()) {
+            if (bean.getPointcut().match(declaredMethod)) {
+                advisorsList.add(bean);
             }
         }
         if (advisorsList.size() == 0) {
@@ -32,8 +36,11 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
         }
     }
 
-    @Override
-    protected List<String> beanNameForType() {
-        return this.getIocContainer().getBeanNameForType(TransactionAdvisor.class);
+
+    public TransactionAdvisor dealTransactionAdvisor() {
+        TransactionManager bean = (TransactionManager) this.getIocContainer().getBean("jdbcTransactionManager");
+        TransactionAdvisor transactionAdvisor = new TransactionAdvisor(bean);
+        transactionAdvisor.setPointcut(new TransactionPointcut());
+        return transactionAdvisor;
     }
 }

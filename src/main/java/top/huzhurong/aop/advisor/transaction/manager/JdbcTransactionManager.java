@@ -8,6 +8,9 @@ import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.definition.DefaultTransactionStatus;
 import top.huzhurong.aop.advisor.transaction.definition.TransactionDefinition;
 import top.huzhurong.aop.advisor.transaction.definition.TransactionStatus;
+import top.huzhurong.ioc.bean.IocContainer;
+import top.huzhurong.ioc.bean.aware.InitAware;
+import top.huzhurong.ioc.bean.aware.IocContainerAware;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -21,7 +24,7 @@ import java.sql.Statement;
  * @since 2018/8/31
  */
 @Slf4j
-public class JdbcTransactionManager implements TransactionManager {
+public class JdbcTransactionManager implements TransactionManager, IocContainerAware, InitAware {
 
     @Override
     public TransactionStatus getTransaction(TransactionDefinition definition) throws SQLException {
@@ -137,4 +140,19 @@ public class JdbcTransactionManager implements TransactionManager {
     @Getter
     @Setter
     private DataSource dataSource;
+    private IocContainer iocContainer;
+
+    @Override
+    public void setIocContainer(IocContainer iocContainer) {
+        this.iocContainer = iocContainer;
+    }
+
+    @Override
+    public void initBean() {
+        if (iocContainer == null) {
+            throw new IllegalStateException("inject iocContainer failed,this is a bug! ^v^ ");
+        }
+        log.info("inject dataSource to jdbcTransactionManager");
+        this.dataSource = (DataSource) iocContainer.getBean("datasource");
+    }
 }

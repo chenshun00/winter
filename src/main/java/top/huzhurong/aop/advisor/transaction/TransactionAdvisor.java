@@ -14,7 +14,7 @@ import top.huzhurong.aop.invocation.Invocation;
  * @author luobo.cs@raycloud.com
  * @since 2018/8/29
  */
-public class TransactionAdvisor extends AbstractAdvisor implements MethodInterceptor {
+public class TransactionAdvisor extends AbstractAdvisor implements MethodInterceptor/*, IocContainerAware, InitAware*/ {
 
     @Getter
     @Setter
@@ -23,6 +23,8 @@ public class TransactionAdvisor extends AbstractAdvisor implements MethodInterce
     @Getter
     @Setter
     private TransactionManager transactionManager;
+
+    //private IocContainer iocContainer;
 
     private TransactionInterceptor transactionInterceptor;
 
@@ -34,7 +36,17 @@ public class TransactionAdvisor extends AbstractAdvisor implements MethodInterce
 
     @Override
     public Object invoke(Invocation invocation) throws Throwable {
-        return transactionInterceptor.doTransaction(invocation, getProxy());
+        return transactionInterceptor.doTransaction(invocation, getObject());
     }
+
+//    @Override
+//    public void setIocContainer(IocContainer iocContainer) {
+//        this.iocContainer = iocContainer;
+//    }
+//
+//    @Override
+//    public void initBean() {
+//        transactionManager = iocContainer.getBean(TransactionManager.class);
+//    }
 
 }
