@@ -26,7 +26,6 @@ public class TransactionTest {
     @Before
     public void before() {
         testService = new TestService();
-
         druidDataSource = new DruidDataSource();
         druidDataSource.setMaxActive(10);
         druidDataSource.setUrl(url);

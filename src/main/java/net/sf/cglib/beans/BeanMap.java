@@ -15,15 +15,13 @@
  */
 package net.sf.cglib.beans;
 
+import net.sf.cglib.core.AbstractClassGenerator;
+import net.sf.cglib.core.KeyFactory;
 import net.sf.cglib.core.ReflectUtils;
 import org.objectweb.asm.ClassVisitor;
 
 import java.security.ProtectionDomain;
 import java.util.*;
-
-interface BeanMapKey {
-    public Object newInstance(Class type, int require);
-}
 
 /**
  * A <code>Map</code>-based view of a JavaBean.  The default set of keys is the
@@ -31,14 +29,12 @@ interface BeanMapKey {
  * a read-only property will be ignored, and write-only properties will
  * be returned as <code>null</code>. Removal of objects is not a
  * supported (the key set is fixed).
- *
  * @author Chris Nokleberg
  */
 abstract public class BeanMap implements Map {
     /**
      * Limit the properties reflected in the key set of the map
      * to readable properties.
-     *
      * @see BeanMap.Generator#setRequire
      */
     public static final int REQUIRE_GETTER = 1;
@@ -46,49 +42,14 @@ abstract public class BeanMap implements Map {
     /**
      * Limit the properties reflected in the key set of the map
      * to writable properties.
-     *
      * @see BeanMap.Generator#setRequire
      */
     public static final int REQUIRE_SETTER = 2;
-    protected Object bean;
-
-*
-        *
-    Create a new <code>BeanMap</code>
-    instance using
-    the specified
-    bean .
-     *
-    This is
-    faster than
-    using the
-    @param
-    bean the
-    the map
-    @link #c
-
-    static method .
-     *
-    JavaBean underlying
-
-    {
-        reate
-    }
-     *@return a new <code>BeanMap</code>instance
-     */
-
-    protected BeanMap() {
-    }
-
-    protected BeanMap(Object bean) {
-        setBean(bean);
-    }
 
     /**
      * Helper method to create a new <code>BeanMap</code>.  For finer
      * control over the generated instance, use a new instance of
      * <code>BeanMap.Generator</code> instead of this static method.
-     *
      * @param bean the JavaBean underlying the map
      * @return a new <code>BeanMap</code> instance
      */
@@ -98,15 +59,40 @@ abstract public class BeanMap implements Map {
         return gen.create();
     }
 
-    abstract public BeanMap newInstance(Object bean);
+    protected Object bean;
+
+    protected BeanMap() {
+    }
 
     /**
      * Get the type of a property.
-     *
      * @param name the name of the JavaBean property
      * @return the type of the property, or null if the property does not exist
      */
     abstract public Class getPropertyType(String name);
+
+    protected BeanMap(Object bean) {
+        setBean(bean);
+    }
+
+    /**
+     * Create a new <code>BeanMap</code> instance using the specified bean.
+     * This is faster than using the {@link #create} static method.
+     * @param bean the JavaBean underlying the map
+     * @return a new <code>BeanMap</code> instance
+     */
+    abstract public BeanMap newInstance(Object bean);
+
+    /**
+     * Get the property of a bean. This allows a <code>BeanMap</code>
+     * to be used statically for multiple beans--the bean instance tied to the
+     * map is ignored and the bean passed to this method is used instead.
+     * @param bean the bean to query; must be compatible with the type of
+     * this <code>BeanMap</code>
+     * @param key must be a String
+     * @return the current value, or null if there is no matching property
+     */
+    abstract public Object get(Object bean, Object key);
 
     public Object get(Object key) {
         return get(bean, key);
@@ -116,23 +102,19 @@ abstract public class BeanMap implements Map {
         return put(bean, key, value);
     }
 
-    /**
-     * Get the property of a bean. This allows a <code>BeanMap</code>
-     * to be used statically for multiple beans--the bean instance tied to the
-     * map is ignored and the bean passed to this method is used instead.
-     *
-     * @param bean the bean to query; must be compatible with the type of
-     *             this <code>BeanMap</code>
-     * @param key  must be a String
-     * @return the current value, or null if there is no matching property
-     */
-    abstract public Object get(Object bean, Object key);
+    public boolean containsValue(Object value) {
+        for (Iterator it = keySet().iterator(); it.hasNext();) {
+            Object v = get(it.next());
+            if (((value == null) && (v == null)) || (value != null && value.equals(v)))
+                return true;
+        }
+        return false;
+    }
 
     /**
      * Set the property of a bean. This allows a <code>BeanMap</code>
      * to be used statically for multiple beans--the bean instance tied to the
      * map is ignored and the bean passed to this method is used instead.
-     *
      * @param key must be a String
      * @return the old value, if there was one, or null
      */
@@ -140,7 +122,6 @@ abstract public class BeanMap implements Map {
 
     /**
      * Change the underlying bean this map should use.
-     *
      * @param bean the new JavaBean
      * @see #getBean
      */
@@ -150,39 +131,11 @@ abstract public class BeanMap implements Map {
 
     /**
      * Return the bean currently in use by this map.
-     *
      * @return the current JavaBean
      * @see #setBean
      */
     public Object getBean() {
         return bean;
-    }
-
-    /*
-
-    public static class Generator extends AbstractClassGenerator {
-        private static final Source SOURCE = new Source(BeanMap.class.getName());
-
-        private static final BeanMapKey KEY_FACTORY =
-          (BeanMapKey)KeyFactory.create(BeanMapKey.class, KeyFactory.CLASS_BY_NAME);
-        private Object bean;
-        private Class beanClass;
-        private int require;
-        public Generator() {
-            super(SOURCE);
-        }
-
-        /**
-         * Set the bean that the generated map should reflect. The bean may be swapped
-         * out for another bean of the same type using {@link #setBean}.
-         * Calling this method overrides any value previously set using {@link #setBeanClass}.
-         * You must call either this method or {@link #setBeanClass} before {@link #create}.
-         * @param bean the initial bean
-         */
-    public void setBean(Object bean) {
-        this.bean = bean;
-        if (bean != null)
-            beanClass = bean.getClass();
     }
 
     public void clear() {
@@ -193,13 +146,11 @@ abstract public class BeanMap implements Map {
         return keySet().contains(key);
     }
 
-    public boolean containsValue(Object value) {
-        for (Iterator it = keySet().iterator(); it.hasNext(); ) {
-            Object v = get(it.next());
-            if (((value == null) && (v == null)) || (value != null && value.equals(v)))
-                return true;
+    public void putAll(Map t) {
+        for (Iterator it = t.keySet().iterator(); it.hasNext();) {
+            Object key = it.next();
+            put(key, t.get(key));
         }
-        return false;
     }
 
     public int size() {
@@ -214,22 +165,15 @@ abstract public class BeanMap implements Map {
         throw new UnsupportedOperationException();
     }
 
-    public void putAll(Map t) {
-        for (Iterator it = t.keySet().iterator(); it.hasNext(); ) {
-            Object key = it.next();
-            put(key, t.get(key));
-        }
-    }
-
     public boolean equals(Object o) {
         if (o == null || !(o instanceof Map)) {
             return false;
         }
-        Map other = (Map) o;
+        Map other = (Map)o;
         if (size() != other.size()) {
             return false;
         }
-        for (Iterator it = keySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = keySet().iterator(); it.hasNext();) {
             Object key = it.next();
             if (!other.containsKey(key)) {
                 return false;
@@ -245,7 +189,7 @@ abstract public class BeanMap implements Map {
 
     public int hashCode() {
         int code = 0;
-        for (Iterator it = keySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = keySet().iterator(); it.hasNext();) {
             Object key = it.next();
             Object value = get(key);
             code += ((key == null) ? 0 : key.hashCode()) ^
@@ -257,7 +201,7 @@ abstract public class BeanMap implements Map {
     // TODO: optimize
     public Set entrySet() {
         HashMap copy = new HashMap();
-        for (Iterator it = keySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = keySet().iterator(); it.hasNext();) {
             Object key = it.next();
             copy.put(key, get(key));
         }
@@ -267,69 +211,20 @@ abstract public class BeanMap implements Map {
     public Collection values() {
         Set keys = keySet();
         List values = new ArrayList(keys.size());
-        for (Iterator it = keys.iterator(); it.hasNext(); ) {
+        for (Iterator it = keys.iterator(); it.hasNext();) {
             values.add(get(it.next()));
         }
         return Collections.unmodifiableCollection(values);
     }
 
-    /**
-     * Set the class of the bean that the generated map should support.
-     * You must call either this method or {@link #setBeanClass} before {@link #create}.
-     *
-     * @param beanClass the class of the bean
+    /*
+     * @see java.util.AbstractMap#toString
      */
-    public void setBeanClass(Class beanClass) {
-        this.beanClass = beanClass;
-    }
-
-    /**
-     * Limit the properties reflected by the generated map.
-     *
-     * @param require any combination of {@link #REQUIRE_GETTER} and
-     *                {@link #REQUIRE_SETTER}; default is zero (any property allowed)
-     */
-    public void setRequire(int require) {
-        this.require = require;
-    }
-
-    protected ClassLoader getDefaultClassLoader() {
-        return beanClass.getClassLoader();
-    }
-
-    protected ProtectionDomain getProtectionDomain() {
-        return ReflectUtils.getProtectionDomain(beanClass);
-    }
-
-    /**
-     * Create a new instance of the <code>BeanMap</code>. An existing
-     * generated class will be reused if possible.
-     */
-    public BeanMap create() {
-        if (beanClass == null)
-            throw new IllegalArgumentException("Class of bean unknown");
-        setNamePrefix(beanClass.getName());
-        return (BeanMap) super.create(KEY_FACTORY.newInstance(beanClass, require));
-    }
-
-    public void generateClass(ClassVisitor v) throws Exception {
-        new BeanMapEmitter(v, getClassName(), beanClass, require);
-    }
-
-    protected Object firstInstance(Class type) {
-        return ((BeanMap) ReflectUtils.newInstance(type)).newInstance(bean);
-    }
-
-    protected Object nextInstance(Object instance) {
-        return ((BeanMap) instance).newInstance(bean);
-    }
-
-    /*    * @see java.util.AbstractMap#toString
-     */
-    public String toString() {
+    public String toString()
+    {
         StringBuffer sb = new StringBuffer();
         sb.append('{');
-        for (Iterator it = keySet().iterator(); it.hasNext(); ) {
+        for (Iterator it = keySet().iterator(); it.hasNext();) {
             Object key = it.next();
             sb.append(key);
             sb.append('=');
@@ -342,5 +237,82 @@ abstract public class BeanMap implements Map {
         return sb.toString();
     }
 
-}
+    public static class Generator extends AbstractClassGenerator {
+        private static final Source SOURCE = new Source(BeanMap.class.getName());
+
+        private static final BeanMapKey KEY_FACTORY =
+                (BeanMapKey)KeyFactory.create(BeanMapKey.class, KeyFactory.CLASS_BY_NAME);
+        private Object bean;
+        private Class beanClass;
+        private int require;
+        public Generator() {
+            super(SOURCE);
+        }
+
+        /**
+         * Set the bean that the generated map should reflect. The bean may be swapped
+         * out for another bean of the same type using {@link #setBean}.
+         * Calling this method overrides any value previously set using {@link #setBeanClass}.
+         * You must call either this method or {@link #setBeanClass} before {@link #create}.
+         * @param bean the initial bean
+         */
+        public void setBean(Object bean) {
+            this.bean = bean;
+            if (bean != null)
+                beanClass = bean.getClass();
+        }
+
+        /**
+         * Set the class of the bean that the generated map should support.
+         * You must call either this method or {@link #setBeanClass} before {@link #create}.
+         * @param beanClass the class of the bean
+         */
+        public void setBeanClass(Class beanClass) {
+            this.beanClass = beanClass;
+        }
+
+        /**
+         * Limit the properties reflected by the generated map.
+         * @param require any combination of {@link #REQUIRE_GETTER} and
+         * {@link #REQUIRE_SETTER}; default is zero (any property allowed)
+         */
+        public void setRequire(int require) {
+            this.require = require;
+        }
+
+        protected ClassLoader getDefaultClassLoader() {
+            return beanClass.getClassLoader();
+        }
+
+        protected ProtectionDomain getProtectionDomain() {
+            return ReflectUtils.getProtectionDomain(beanClass);
+        }
+
+        /**
+         * Create a new instance of the <code>BeanMap</code>. An existing
+         * generated class will be reused if possible.
+         */
+        public BeanMap create() {
+            if (beanClass == null)
+                throw new IllegalArgumentException("Class of bean unknown");
+            setNamePrefix(beanClass.getName());
+            return (BeanMap)super.create(KEY_FACTORY.newInstance(beanClass, require));
+        }
+
+        public void generateClass(ClassVisitor v) throws Exception {
+            new BeanMapEmitter(v, getClassName(), beanClass, require);
+        }
+
+        protected Object firstInstance(Class type) {
+            return ((BeanMap)ReflectUtils.newInstance(type)).newInstance(bean);
+        }
+
+        protected Object nextInstance(Object instance) {
+            return ((BeanMap)instance).newInstance(bean);
+        }
+
+        interface BeanMapKey {
+            public Object newInstance(Class type, int require);
+        }
+    }
 }

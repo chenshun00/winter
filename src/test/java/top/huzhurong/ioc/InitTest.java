@@ -15,17 +15,14 @@ import java.util.Set;
  * @since 2018/9/8
  */
 
-public abstract class InitTest {
+public class InitTest {
 
     protected Init init = new Init();
     protected BeanFactory beanFactory;
 
     @Before
     public void before() {
-//        init.setBootClass(InitTest.class);
-//        Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc.scan.test");
-//        init.instantiation(classInfoSet);
-//        beanFactory = init.getBeanFactory();
+
     }
 
     @Test

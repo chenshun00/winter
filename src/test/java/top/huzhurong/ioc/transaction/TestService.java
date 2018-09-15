@@ -22,12 +22,16 @@ public class TestService {
      * 测试事务回滚
      */
     @Transactional
-    public void addTest(Test test) {
+    public Integer addTest(Test test) throws ClassNotFoundException {
         testDao.addTest(test);
         Test testById = testDao.getTestById(1);
-        testById.setName("陈顺测试");
+        testById.setName("transaction测试");
         testDao.updatetestById(testById);
+        //注释即可打开异常
 //        int i = 10 / 0;
+
+        Class.forName("xxx.xxx.xxx.xxx");
+        return 1;
     }
 
 }

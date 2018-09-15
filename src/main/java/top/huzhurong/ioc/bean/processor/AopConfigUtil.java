@@ -19,7 +19,6 @@ import java.util.Set;
 @Slf4j
 public class AopConfigUtil {
 
-
     public static boolean proxyByClass = true;
 
     public static void handleConfig(Set<ClassInfo> classInfoSet, Class<?> bootClass) {

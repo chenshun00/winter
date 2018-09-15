@@ -9,16 +9,6 @@ public class BeanInfo {
     private Object object;
     private String name;
 
-    public BeanInfo(Class<?> aClass) {
-        try {
-            this.aClass = aClass;
-            this.object = aClass.newInstance();
-            this.name = aClass.getSimpleName();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public BeanInfo(Object object) {
         this(object, object.getClass().getSimpleName());
     }

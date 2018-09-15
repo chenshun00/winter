@@ -10,7 +10,10 @@ import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Controller;
 import top.huzhurong.ioc.annotation.Inject;
-import top.huzhurong.ioc.bean.*;
+import top.huzhurong.ioc.bean.ClassInfo;
+import top.huzhurong.ioc.bean.DefaultIocContainer;
+import top.huzhurong.ioc.bean.InfoBeanFactory;
+import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.BeanFactoryAware;
 import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
@@ -36,8 +39,6 @@ public class Init {
     @Getter
     private IocContainer iocContainer = new DefaultIocContainer();
     @Getter
-    private BeanFactory beanFactory = new DefaultBeanFactory(iocContainer);
-    @Getter
     private BeanScanner beanScanner = new BeanScanner();
 
     public Set<ClassInfo> scan(String... basePackages) {
@@ -59,38 +60,39 @@ public class Init {
         //handle bean name
         Set<ClassInfo> collect = info.stream().map(this::handleName).collect(Collectors.toSet());
         //register to ioc
-        beanFactory.register(collect);
+        iocContainer.register(collect);
         handleAspectj(classInfoSet);
         //handle aware interface
         handleAware(collect);
+
         InfoBeanFactory infoBeanFactory;
-        if (beanFactory instanceof InfoBeanFactory) {
-            infoBeanFactory = (InfoBeanFactory) beanFactory;
+        if (iocContainer instanceof InfoBeanFactory) {
+            infoBeanFactory = iocContainer;
         } else {
-            throw new ClassCastException("beanFactory can't cast infoBeanFactory");
+            throw new ClassCastException("iocContainer can't cast infoBeanFactory");
         }
         //get BeanProcessor class set
         List<String> beanNameForType = infoBeanFactory.getBeanNameForType(BeanProcessor.class);
         for (ClassInfo classInfo : collect) {
             for (String beanName : beanNameForType) {
-                BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
-                Object bean = beanProcessor.processBeforeInit(this.beanFactory.getBean(classInfo.getClassName()));
-                beanFactory.put(classInfo.getClassName(), bean);
+                BeanProcessor beanProcessor = (BeanProcessor) iocContainer.getBean(beanName);
+                Object bean = beanProcessor.processBeforeInit(this.iocContainer.getBean(classInfo.getClassName()));
+                iocContainer.put(classInfo.getClassName(), bean);
             }
         }
-            collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
+        collect.stream().map(ClassInfo::getClassName).map(iocContainer::getBean).filter(this::needInject).forEach(this::inject);
         initBean(collect);
         for (ClassInfo classInfo : collect) {
             for (String beanName : beanNameForType) {
-                BeanProcessor beanProcessor = (BeanProcessor) beanFactory.getBean(beanName);
-                Object bean = beanProcessor.processAfterInit(this.beanFactory.getBean(classInfo.getClassName()));
-                beanFactory.put(classInfo.getClassName(), bean);
+                BeanProcessor beanProcessor = (BeanProcessor) iocContainer.getBean(beanName);
+                Object bean = beanProcessor.processAfterInit(this.iocContainer.getBean(classInfo.getClassName()));
+                iocContainer.put(classInfo.getClassName(), bean);
             }
         }
     }
 
     private void initBean(Set<ClassInfo> collect) {
-        collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean)
+        collect.stream().map(ClassInfo::getClassName).map(iocContainer::getBean)
                 .filter(bean -> (bean instanceof InitAware))
                 .forEach(bean -> {
                     InitAware aware = (InitAware) bean;
@@ -110,7 +112,7 @@ public class Init {
         while (iterator.hasNext()) {
             ClassInfo classInfo = iterator.next();
             if (classInfo.getaClass().getAnnotation(Aspectj.class) != null) {
-                advisors.add(this.beanFactory.getBean(classInfo.getClassName()));
+                advisors.add(this.iocContainer.getBean(classInfo.getClassName()));
                 iterator.remove();
             }
         }
@@ -139,13 +141,13 @@ public class Init {
 
     private void handleAware(Set<ClassInfo> classInfoSet) {
         for (ClassInfo classInfo : classInfoSet) {
-            Object bean = this.getBeanFactory().getBean(classInfo.getClassName());
+            Object bean = this.iocContainer.getBean(classInfo.getClassName());
             if (bean instanceof IocContainerAware) {
                 IocContainerAware aware = (IocContainerAware) bean;
                 aware.setIocContainer(iocContainer);
             } else if (bean instanceof BeanFactoryAware) {
                 BeanFactoryAware aware = (BeanFactoryAware) bean;
-                aware.setBeanFactory(beanFactory);
+                aware.setBeanFactory(iocContainer);
             }
         }
     }
@@ -166,11 +168,11 @@ public class Init {
                     Inject inject = ff.getAnnotation(Inject.class);
                     String value = inject.value();
                     if (!value.equals("")) {
-                        Object bean = this.beanFactory.getBean(value);
+                        Object bean = this.iocContainer.getBean(value);
                         doInject(bean, ff, object);
                     } else {
                         String name = ff.getName();
-                        Object bean = this.beanFactory.getBean(name);
+                        Object bean = this.iocContainer.getBean(name);
                         doInject(bean, ff, object);
                     }
                 });

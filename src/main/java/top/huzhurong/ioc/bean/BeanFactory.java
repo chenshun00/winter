@@ -1,5 +1,6 @@
 package top.huzhurong.ioc.bean;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,4 +22,6 @@ public interface BeanFactory {
     void register(ClassInfo classInfo);
 
     void put(String name, Object object);
+
+    List<Object> aspectj();
 }

@@ -27,7 +27,7 @@ public class CglibProxyTest extends InitTest {
     public void before() {
         init.setBootClass(CglibProxyTest.class);
         Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc");
-        beanFactory = init.getBeanFactory();
+        beanFactory = init.getIocContainer();
 
         druidDataSource = new DruidDataSource();
         druidDataSource.setMaxActive(10);
@@ -50,13 +50,10 @@ public class CglibProxyTest extends InitTest {
     }
 
     @Test
-    public void transactionTest() {
+    public void transactionTest() throws ClassNotFoundException {
         TestService testService = (TestService) this.beanFactory.getBean("testService");
         top.huzhurong.ioc.transaction.Test test = top.huzhurong.ioc.transaction.Test.builder()
                 .age(22).id(18).name("test").build();
-        System.out.println("--dao");
-        System.out.println(testService.getTestDao());
-        System.out.println("dao--");
         testService.addTest(test);
     }
 }

@@ -17,9 +17,9 @@ public class TestService {
     public void addTest(Test test) {
         testDao.addTest(test);
         Test testById = testDao.getTestById(1);
-        testById.setName("陈顺测试");
+        testById.setName("transaction测试");
         testDao.updatetestById(testById);
-        //int i = 10 / 0;
+        int i = 10 / 0;
     }
 
 }

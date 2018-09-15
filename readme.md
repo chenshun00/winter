@@ -1,23 +1,102 @@
 ### 如何运行
 
-*   maven
-*   jdk1.8
-*   安装lombok
+*   按照 `maven` 
+*   按照 `jdk1.8` 
+*   安装 `lombok`，安装步骤 [Intellij IDEA 安装lombok及使用详解](https://blog.csdn.net/zhglance/article/details/54931430)
 
-具体的运行测试可以在 `top.huzhurong.aop.core.TestUse` 中找到，have a try  😊
 
-### 申明式事务
+#### Aop 测试
 
-*   事务的处理步骤
-    *   begin/start;(开启事务)
-    *   sql operation;(sql操作,curd)
-    *   exception(异常rollback)
-    *   success(commit)
+##### 1、直接运行测试代码
 
-> 如上即是事务的完整处理步骤，而sql操作当中又可以细分为多次操作(子事务)，这样就可以解决保存点的问题，
-每一个子事务都是完整的可以不影响父事务，`innodb的平板事务模型`.
+`cglib` 测试代码可以在 `top.huzhurong.ioc.CglibProxyTest#cglib` 类中找到，直接运行即可出现如下结果
+`jdk proxy` 测试代码可以在 `top.huzhurong.ioc.JdkProxyTest#jdkProxy` 类中找到，直接运行即可出现如下结果
 
-#### 如何实现申明式事务处理
+```text
+----# testScan1's initAware interface #----
+----* v^v AspectjSecond aspectj before TestScan1 v^v *----
+----# start invoke testScan1's hello method #----
+----$ start invoke TestScan2's hello method $----
+----^ invoke TestScan3's test3 method ^----
+----$ end invoke TestScan2's hello method $----
+----# end invoke testScan1's hello method #----
+----* ^@^ AspectjSecond aspectj after TestScan1 ^@^ *----
+```
+
+##### 2、自定义测试
+
+1、定义切面类，代码 `top.huzhurong.ioc.scan.test.AspectjTest.AspectjSecond` 所示，`@Aspecjt` 表示切面，`@Order` 表示切面执行顺序
+2、定义被拦截类+方法
+3、执行测试，具体细节请参考1
+#### 申明式事务测试
+
+1、加入test 目录下的test.sql文件，修改测试代码的url,user及password即可执行
+
+```text
+    @Test
+    public void transactionTest() {
+        TestService testService = (TestService) this.beanFactory.getBean("testService");
+        Test test = Test.builder().age(22).id(18).name("test").build();
+        testService.addTest(test);
+    }
+```
+
+在 `TestService`中加入 `int i = 10/0` 即可测试异常发生后事务的回滚
+
+```text
+    @Transactional
+    public void addTest(Test test) {
+        testDao.addTest(test);
+        Test testById = testDao.getTestById(1);
+        testById.setName("transaction测试");
+        testDao.updatetestById(testById);
+        //注释即可打开异常
+        //int i = 10 / 0;
+    }
+```
+
+执行结果分别如下
+
+```text
+INFO  t.h.a.a.transaction.manager.JdbcTransactionManager - inject dataSource to jdbcTransactionManager
+INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+INFO  t.h.a.a.transaction.manager.TransactionInterceptor - 成功获取事务
+INFO  top.huzhurong.ioc.transaction.TestDao - addTest方法当中，从ConnectionManager中获取数据库链接:com.mysql.jdbc.JDBC4Connection@587c290d
+INFO  top.huzhurong.ioc.transaction.TestDao - getTestById方法当中，从ConnectionManager中获取数据库链接:com.mysql.jdbc.JDBC4Connection@587c290d
+INFO  top.huzhurong.ioc.transaction.TestDao - updatetestById方法当中，从ConnectionManager中获取数据库链接:com.mysql.jdbc.JDBC4Connection@587c290d
+INFO  top.huzhurong.ioc.transaction.TestDao - 执行的sql:update `test` set name = transaction测试 , age = 21 where id = 1
+INFO  t.h.a.a.transaction.manager.JdbcTransactionManager - 事务提交
+
+---------------------执行事务出现异常----------------------
+2018-09-15 15:22:10.587 [main] INFO  com.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2018-09-15 15:22:10.822 [main] INFO  t.h.a.a.transaction.manager.TransactionInterceptor - 成功获取事务
+2018-09-15 15:22:10.822 [main] INFO  top.huzhurong.ioc.transaction.TestDao - addTest方法当中，从ConnectionManager中获取数据库链接:com.mysql.jdbc.JDBC4Connection@587c290d
+2018-09-15 15:22:10.838 [main] INFO  top.huzhurong.ioc.transaction.TestDao - getTestById方法当中，从ConnectionManager中获取数据库链接:com.mysql.jdbc.JDBC4Connection@587c290d
+2018-09-15 15:22:10.841 [main] INFO  top.huzhurong.ioc.transaction.TestDao - updatetestById方法当中，从ConnectionManager中获取数据库链接:com.mysql.jdbc.JDBC4Connection@587c290d
+2018-09-15 15:22:10.841 [main] INFO  top.huzhurong.ioc.transaction.TestDao - 执行的sql:update `test` set name = transaction测试 , age = 21 where id = 1
+2018-09-15 15:22:10.842 [main] ERROR t.h.a.a.transaction.manager.TransactionInterceptor - 事务处理出现异常:null,开始进行事务回滚
+2018-09-15 15:22:10.842 [main] INFO  t.h.a.a.transaction.manager.JdbcTransactionManager - 事务回滚
+java.lang.reflect.InvocationTargetException
+
+	at top.huzhurong.aop.advisor.transaction.manager.TransactionInterceptor.doTransaction(TransactionInterceptor.java:38)
+	at top.huzhurong.aop.advisor.transaction.TransactionAdvisor.invoke(TransactionAdvisor.java:42)
+	at top.huzhurong.aop.invocation.AbstractInvocation.proceed(AbstractInvocation.java:55)
+	at top.huzhurong.aop.invocation.ProxyFactory.lambda$createProxy$0(ProxyFactory.java:19)
+	at top.huzhurong.ioc.transaction.TestService$$EnhancerByCGLIB$$583d7058.addTest(<generated>)
+	at top.huzhurong.ioc.CglibProxyTest.transactionTest(CglibProxyTest.java:57)
+Caused by: java.lang.ClassNotFoundException: xxx.xxx.xxx.xxx
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:338)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	at java.lang.Class.forName0(Native Method)
+	at java.lang.Class.forName(Class.java:264)
+	at top.huzhurong.ioc.transaction.TestService.addTest(TestService.java:33)
+
+```
+
+
+##### 如何实现申明式事务处理
 
 添加 `TransactionAdvisor` 切面拦截实现了申明式事务，事务的原子操作面向的其实 `java.sql.Connection`，
 即只要通过控制`多个Service`之间的`Connection`是一个即可实现事务的完整操作。
