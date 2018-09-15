@@ -18,7 +18,7 @@ public class ProxyFactory {
         enhancer.setCallback((MethodInterceptor) (object, method, args, methodProxy) ->
                 new CglibInvocation(target, object, method, args, methodProxy, advisors).proceed());
         enhancer.setCallbackFilter(method -> 0);
-        enhancer.setSuperclass(tClass);
+        enhancer.setTarget(target);
         @SuppressWarnings("unchecked")
         T proxy = (T) enhancer.create();
         return proxy;

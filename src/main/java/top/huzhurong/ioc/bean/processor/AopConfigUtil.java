@@ -1,6 +1,7 @@
 package top.huzhurong.ioc.bean.processor;
 
 import lombok.extern.slf4j.Slf4j;
+import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
 import top.huzhurong.aop.core.StringUtil;
@@ -41,6 +42,8 @@ public class AopConfigUtil {
             log.info("start handle transaction, add TransactionBeanProcessor.class");
             ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtil.handleClassName(TransactionBeanProcessor.class));
             ClassInfo transaction = new ClassInfo(JdbcTransactionManager.class, StringUtil.handleClassName(TransactionManager.class));
+            ClassInfo pointCut = new ClassInfo(TransactionPointcut.class, StringUtil.handleClassName(TransactionPointcut.class));
+            classInfoSet.add(pointCut);
             classInfoSet.add(classInfo);
             classInfoSet.add(transaction);
         }

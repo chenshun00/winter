@@ -19,11 +19,7 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
     @Override
     protected Object processSubType(Object object) {
         List<Advisor> advisorsList = new LinkedList<>();
-        TransactionAdvisor bean = this.getIocContainer().getBean(TransactionAdvisor.class);
-        if (bean == null) {
-            bean = dealTransactionAdvisor();
-            this.getIocContainer().put("transactionAdvisor", bean);
-        }
+        TransactionAdvisor bean = dealTransactionAdvisor(object);
         for (Method declaredMethod : object.getClass().getDeclaredMethods()) {
             if (bean.getPointcut().match(declaredMethod)) {
                 advisorsList.add(bean);
@@ -37,10 +33,12 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
     }
 
 
-    public TransactionAdvisor dealTransactionAdvisor() {
+    public TransactionAdvisor dealTransactionAdvisor(Object object) {
         TransactionManager bean = (TransactionManager) this.getIocContainer().getBean("jdbcTransactionManager");
+        TransactionPointcut pointcut = (TransactionPointcut) this.getIocContainer().getBean("transactionPointcut");
         TransactionAdvisor transactionAdvisor = new TransactionAdvisor(bean);
-        transactionAdvisor.setPointcut(new TransactionPointcut());
+        transactionAdvisor.setObject(object);
+        transactionAdvisor.setPointcut(pointcut);
         return transactionAdvisor;
     }
 }

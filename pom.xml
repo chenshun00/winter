@@ -10,21 +10,27 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cglib-version>3.2.6</cglib-version>
         <lombok-version>1.18.0</lombok-version>
         <slf4j-api-version>1.7.25</slf4j-api-version>
         <logback-version>1.0.11</logback-version>
         <druid-version>1.1.10</druid-version>
         <mysql-version>5.1.22</mysql-version>
+        <asm.version>6.2.1</asm.version>
+        <ant.version>1.10.3</ant.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
-            <version>${cglib-version}</version>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+            <version>${ant.version}</version>
+            <optional>true</optional>
+        </dependency>
         <!-- log  -->
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -78,12 +78,7 @@ public class Init {
                 beanFactory.put(classInfo.getClassName(), bean);
             }
         }
-        /*
-         * fix jdk proxy bug,bring cglib proxy bug
-         */
-        if (!AopConfigUtil.proxyByClass) {
             collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
-        }
         initBean(collect);
         for (ClassInfo classInfo : collect) {
             for (String beanName : beanNameForType) {
@@ -91,9 +86,6 @@ public class Init {
                 Object bean = beanProcessor.processAfterInit(this.beanFactory.getBean(classInfo.getClassName()));
                 beanFactory.put(classInfo.getClassName(), bean);
             }
-        }
-        if (AopConfigUtil.proxyByClass) {
-            collect.stream().map(ClassInfo::getClassName).map(beanFactory::getBean).filter(this::needInject).forEach(this::inject);
         }
     }
 
