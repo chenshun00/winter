@@ -17,4 +17,11 @@ public class DefaultIocContainerTest {
         Assert.assertTrue(aClass.isAssignableFrom(ArrayList.class));
     }
 
+    @Test
+    public void testPackagePath() {
+        Class<?> aClass = DefaultIocContainerTest.class;
+        String name = aClass.getPackage().getName();
+        Assert.assertEquals("top.huzhurong.ioc.bean", name);
+    }
+
 }

@@ -17,11 +17,6 @@ import java.util.Set;
 @EnableConfiguration(proxyByClass = false)
 public class JdkProxyTest extends InitTest {
 
-
-    private static final String url = "jdbc:mysql://127.0.0.1:3306/test?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;autoReconnect=true";
-    private static final String user = "root";
-    private static final String password = "chenshun";
-
     private DruidDataSource druidDataSource;
 
     @Before
@@ -41,7 +36,7 @@ public class JdkProxyTest extends InitTest {
         druidDataSource.setTestWhileIdle(true);
 
         beanFactory.put("datasource", druidDataSource);
-        init.instantiation(classInfoSet);
+        init.instantiation();
     }
 
 

@@ -1,6 +1,7 @@
 package top.huzhurong.ioc;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.aop.advisor.Advisor;
@@ -8,6 +9,7 @@ import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
+import top.huzhurong.ioc.annotation.Configuration;
 import top.huzhurong.ioc.annotation.Controller;
 import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.ClassInfo;
@@ -19,11 +21,15 @@ import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
 import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
+import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
 import top.huzhurong.ioc.scan.BeanScanner;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * init ioc container
@@ -33,15 +39,23 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class Init {
-    @Getter
     @Setter
     private Class<?> bootClass;
     @Getter
     private IocContainer iocContainer = new DefaultIocContainer();
-    @Getter
     private BeanScanner beanScanner = new BeanScanner();
 
-    public Set<ClassInfo> scan(String... basePackages) {
+    private AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+
+    public Init() {
+    }
+
+    public Init(@NonNull Class<?> bootClass) {
+        this.bootClass = bootClass;
+        instantiation();
+    }
+
+    public Set<ClassInfo> scan(@NonNull String... basePackages) {
         Set<ClassInfo> classInfoSet = new HashSet<>();
         if (basePackages == null || basePackages.length == 0) {
             return classInfoSet;
@@ -53,17 +67,30 @@ public class Init {
                 .collect(Collectors.toSet());
     }
 
-    public void instantiation(Set<ClassInfo> classInfoSet) {
+    public void instantiation() {
+        if (atomicBoolean.get()) {
+            throw new IllegalStateException("Repeat registration exception");
+        }
+        atomicBoolean.compareAndSet(false, true);
+        String name = bootClass.getPackage().getName();
+        Set<ClassInfo> classInfoSet = scan(name);
+
         Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
+        info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
         //handle transaction and aop config
         AopConfigUtil.handleConfig(info, bootClass);
+
         //handle bean name
         Set<ClassInfo> collect = info.stream().map(this::handleName).collect(Collectors.toSet());
         //register to ioc
         iocContainer.register(collect);
+
         handleAspectj(classInfoSet);
         //handle aware interface
         handleAware(collect);
+
+        ConfigurationUtil configurationUtil = iocContainer.getBean(ConfigurationUtil.class);
+        configurationUtil.handleConfig(collect);
 
         InfoBeanFactory infoBeanFactory;
         if (iocContainer instanceof InfoBeanFactory) {
@@ -214,12 +241,12 @@ public class Init {
     }
 
     private boolean find(ClassInfo classInfo) {
-        if (classInfo.getaClass().getAnnotation(Bean.class) != null) {
-            return true;
-        } else if (classInfo.getaClass().getAnnotation(Controller.class) != null) {
-            return true;
-        } else {
-            return classInfo.getaClass().getAnnotation(Aspectj.class) != null;
-        }
+        Class<?> aClass = classInfo.getaClass();
+        return findAnnotation(aClass, Bean.class, Controller.class, Aspectj.class, Configuration.class);
+    }
+
+    @SafeVarargs
+    private final boolean findAnnotation(Class<?> aClass, Class<? extends Annotation>... annotation) {
+        return Stream.of(annotation).anyMatch(nn -> aClass.getDeclaredAnnotation(nn) != null);
     }
 }

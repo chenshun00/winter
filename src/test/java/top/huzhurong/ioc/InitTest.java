@@ -17,6 +17,10 @@ import java.util.Set;
 
 public class InitTest {
 
+    public static final String url = "jdbc:mysql://127.0.0.1:3306/test?useSSL=false&amp;useUnicode=true&amp;characterEncoding=utf-8&amp;autoReconnect=true";
+    public static final String user = "root";
+    public static final String password = "chenshun";
+
     protected Init init = new Init();
     protected BeanFactory beanFactory;
 
