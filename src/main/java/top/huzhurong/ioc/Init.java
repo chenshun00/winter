@@ -16,9 +16,7 @@ import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.bean.DefaultIocContainer;
 import top.huzhurong.ioc.bean.InfoBeanFactory;
 import top.huzhurong.ioc.bean.IocContainer;
-import top.huzhurong.ioc.bean.aware.BeanFactoryAware;
-import top.huzhurong.ioc.bean.aware.InitAware;
-import top.huzhurong.ioc.bean.aware.IocContainerAware;
+import top.huzhurong.ioc.bean.aware.*;
 import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
@@ -76,12 +74,15 @@ public class Init {
         Set<ClassInfo> classInfoSet = scan(name);
 
         Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
+
         info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
+        info.add(new ClassInfo(Environment.class, StringUtil.handleClassName(Environment.class)));
         //handle transaction and aop config
         AopConfigUtil.handleConfig(info, bootClass);
 
         //handle bean name
         Set<ClassInfo> collect = info.stream().map(this::handleName).collect(Collectors.toSet());
+
         //register to ioc
         iocContainer.register(collect);
 
@@ -169,12 +170,17 @@ public class Init {
     private void handleAware(Set<ClassInfo> classInfoSet) {
         for (ClassInfo classInfo : classInfoSet) {
             Object bean = this.iocContainer.getBean(classInfo.getClassName());
-            if (bean instanceof IocContainerAware) {
-                IocContainerAware aware = (IocContainerAware) bean;
-                aware.setIocContainer(iocContainer);
-            } else if (bean instanceof BeanFactoryAware) {
-                BeanFactoryAware aware = (BeanFactoryAware) bean;
-                aware.setBeanFactory(iocContainer);
+            if (bean instanceof Aware) {
+                if (bean instanceof IocContainerAware) {
+                    IocContainerAware aware = (IocContainerAware) bean;
+                    aware.setIocContainer(this.iocContainer);
+                } else if (bean instanceof BeanFactoryAware) {
+                    BeanFactoryAware aware = (BeanFactoryAware) bean;
+                    aware.setBeanFactory(this.iocContainer);
+                } else if (bean instanceof EnvironmentAware) {
+                    EnvironmentAware aware = (EnvironmentAware) bean;
+                    aware.setEnvironment(this.iocContainer.getBean(Environment.class));
+                }
             }
         }
     }
