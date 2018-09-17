@@ -75,8 +75,8 @@ public class Init {
 
         Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
 
-        info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
         info.add(new ClassInfo(Environment.class, StringUtil.handleClassName(Environment.class)));
+        info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
         //handle transaction and aop config
         AopConfigUtil.handleConfig(info, bootClass);
 

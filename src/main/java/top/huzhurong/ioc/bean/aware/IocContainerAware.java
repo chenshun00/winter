@@ -6,7 +6,7 @@ import top.huzhurong.ioc.bean.IocContainer;
  * @author luobo.cs@raycloud.com
  * @since 2018/9/9
  */
-public interface IocContainerAware {
+public interface IocContainerAware extends Aware {
     /**
      * inject ioc container
      *

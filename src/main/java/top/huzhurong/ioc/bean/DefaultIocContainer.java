@@ -32,7 +32,7 @@ public class DefaultIocContainer implements IocContainer {
     public <T> T getBean(final Class<T> tClass) {
         AtomicReference<String> name = new AtomicReference<>();
         beanInfoMap.forEach((key, value) -> {
-            if (tClass.isAssignableFrom(value.getaClass())) {
+            if (tClass.isAssignableFrom(value.getAClass())) {
                 name.set(key);
             }
         });
@@ -76,7 +76,6 @@ public class DefaultIocContainer implements IocContainer {
         BeanInfo beanInfo = new BeanInfo(object, name);
         beanInfoMap.put(name, beanInfo);
     }
-
 
     public List<Object> aspectj() {
         List<Object> objects = new ArrayList<>();

@@ -39,6 +39,7 @@ public class ConfigurationUtil implements IocContainerAware {
         if (declaredAnnotation != null) {
             Method[] declaredMethods = aClass.getDeclaredMethods();
             Object bean = iocContainer.getBean(aClass);
+            System.out.println("bean:" + bean);
             Stream.of(declaredMethods).forEach(method -> {
                 if (method.getDeclaredAnnotation(Bean.class) != null) {
                     set.add(handleMethod(method, bean));
