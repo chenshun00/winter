@@ -10,7 +10,6 @@ import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Configuration;
-import top.huzhurong.ioc.annotation.Controller;
 import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.bean.DefaultIocContainer;
@@ -20,6 +19,7 @@ import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
 import top.huzhurong.ioc.scan.BeanScanner;
+import top.huzhurong.web.annotation.Controller;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
