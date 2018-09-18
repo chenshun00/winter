@@ -14,7 +14,6 @@ import top.huzhurong.ioc.annotation.Controller;
 import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.bean.DefaultIocContainer;
-import top.huzhurong.ioc.bean.InfoBeanFactory;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.*;
 import top.huzhurong.ioc.bean.processor.AopConfigUtil;
@@ -54,10 +53,6 @@ public class Init {
     }
 
     public Set<ClassInfo> scan(@NonNull String... basePackages) {
-        Set<ClassInfo> classInfoSet = new HashSet<>();
-        if (basePackages == null || basePackages.length == 0) {
-            return classInfoSet;
-        }
         return Arrays.stream(basePackages)
                 .filter(basePackage -> !basePackage.isEmpty())
                 .map(beanScanner::scan)
@@ -87,20 +82,15 @@ public class Init {
         iocContainer.register(collect);
 
         handleAspectj(classInfoSet);
+
         //handle aware interface
         handleAware(collect);
 
         ConfigurationUtil configurationUtil = iocContainer.getBean(ConfigurationUtil.class);
         configurationUtil.handleConfig(collect);
 
-        InfoBeanFactory infoBeanFactory;
-        if (iocContainer instanceof InfoBeanFactory) {
-            infoBeanFactory = iocContainer;
-        } else {
-            throw new ClassCastException("iocContainer can't cast infoBeanFactory");
-        }
         //get BeanProcessor class set
-        List<String> beanNameForType = infoBeanFactory.getBeanNameForType(BeanProcessor.class);
+        List<String> beanNameForType = iocContainer.getBeanNameForType(BeanProcessor.class);
         for (ClassInfo classInfo : collect) {
             for (String beanName : beanNameForType) {
                 BeanProcessor beanProcessor = (BeanProcessor) iocContainer.getBean(beanName);

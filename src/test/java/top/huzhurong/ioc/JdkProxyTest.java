@@ -4,11 +4,8 @@ import com.alibaba.druid.pool.DruidDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
-import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.scan.test.AAA;
 import top.huzhurong.ioc.transaction.TestService;
-
-import java.util.Set;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -22,7 +19,6 @@ public class JdkProxyTest extends InitTest {
     @Before
     public void before() {
         init.setBootClass(CglibProxyTest.class);
-        Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc");
         beanFactory = init.getIocContainer();
 
         druidDataSource = new DruidDataSource();

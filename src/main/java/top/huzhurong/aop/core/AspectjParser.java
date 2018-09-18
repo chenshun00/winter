@@ -5,10 +5,7 @@ import top.huzhurong.aop.advisor.AfterAdvisor;
 import top.huzhurong.aop.advisor.AroundAdvisor;
 import top.huzhurong.aop.advisor.BeforeAdvisor;
 import top.huzhurong.aop.advisor.pointcut.StringPointcut;
-import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionAdvisor;
-import top.huzhurong.aop.advisor.transaction.TransactionManager;
-import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
 import top.huzhurong.aop.annotation.After;
 import top.huzhurong.aop.annotation.Around;
 import top.huzhurong.aop.annotation.Aspectj;
@@ -40,12 +37,11 @@ public class AspectjParser {
         aspectjList.sort(new OrderConparator());
         List<Advisor> advisorList = new LinkedList<>();
         aspectjList.forEach(as -> advisorList.addAll(parserAspectj(as.getClass(), as)));
-//        advisorList.addAll(dealTransactionAdvisor());
         return advisorList;
     }
 
     /**
-     * 解析切面，尚未实现ioc只能采取目前之中方法，如果实现了ioc就可以添加 beanProcessor 前后置处理
+     * 解析切面
      *
      * @param aClass aspectj bean
      * @return advisor list
@@ -77,22 +73,10 @@ public class AspectjParser {
     }
 
     /**
-     * Temporary processing transaction , if we add ioc and more feature will add a flag to support if we use transaction
-     */
-    public static List<Advisor> dealTransactionAdvisor() {
-        List<Advisor> advisors = new LinkedList<>();
-        TransactionManager transactionManager = new JdbcTransactionManager();
-        TransactionAdvisor transactionAdvisor = new TransactionAdvisor(transactionManager);
-        transactionAdvisor.setPointcut(new TransactionPointcut());
-        advisors.add(transactionAdvisor);
-        return advisors;
-    }
-
-    /**
      * 查看对象是否被切面拦截，目前未实现 [* package.class.method (**)] 的切面规则
      *
-     * @param object   ioc 容器对象(实例化对象，未实现ioc之前就是自己new的实例对象)
-     * @param advisors 切面集合
+     * @param object   special bean
+     * @param advisors aspectj set
      */
     public static Object findApplyAdvisor(Object object, List<Advisor> advisors) {
         List<Advisor> advisorsList = new LinkedList<>();
@@ -137,18 +121,18 @@ public class AspectjParser {
     }
 
     /**
-     * @param targetClass 目标类
-     * @param annotation  注解
-     * @return 存在该注解返回true，不存在返回false
+     * @param targetClass target class
+     * @param annotation  special annotation
+     * @return return true if exist , or false
      */
     public static boolean findAAnnotation(Class<?> targetClass, Class<? extends Annotation> annotation) {
         return targetClass.getAnnotation(annotation) != null;
     }
 
     /**
-     * @param method     方法，public修饰符
-     * @param annotation 注解
-     * @return 注解
+     * @param method     target method
+     * @param annotation special annotation
+     * @return Optional
      */
     public static Optional<Annotation> findAAnnotationInUse(Method method, Class<? extends Annotation> annotation) {
         Annotation declaredAnnotation = method.getDeclaredAnnotation(annotation);

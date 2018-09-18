@@ -1,6 +1,5 @@
 package top.huzhurong.ioc;
 
-import com.alibaba.druid.pool.DruidDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
@@ -14,25 +13,11 @@ import top.huzhurong.ioc.transaction.TestService;
 @EnableConfiguration
 public class CglibProxyTest extends InitTest {
 
-    private DruidDataSource druidDataSource;
-
     @Before
     public void before() {
         init.setBootClass(CglibProxyTest.class);
-        beanFactory = init.getIocContainer();
-
-        druidDataSource = new DruidDataSource();
-        druidDataSource.setMaxActive(10);
-        druidDataSource.setUrl(url);
-        druidDataSource.setUsername(user);
-        druidDataSource.setPassword(password);
-        druidDataSource.setValidationQuery("select 'x'");
-        druidDataSource.setTestOnBorrow(false);
-        druidDataSource.setTestOnReturn(false);
-        druidDataSource.setTestWhileIdle(true);
-
-        beanFactory.put("datasource", druidDataSource);
         init.instantiation();
+        this.beanFactory = init.getIocContainer();
     }
 
     @Test

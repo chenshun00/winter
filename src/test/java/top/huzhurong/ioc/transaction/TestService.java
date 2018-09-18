@@ -6,6 +6,8 @@ import top.huzhurong.aop.annotation.Transactional;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Inject;
 
+import java.util.Date;
+
 /**
  * @author luobo.cs@raycloud.com
  * @since 2018/9/2
@@ -17,6 +19,12 @@ public class TestService {
     @Getter
     @Setter
     private TestDao testDao;
+
+
+    @Inject
+    @Getter
+    @Setter
+    private UserDao userDao;
 
     /**
      * 测试事务回滚
@@ -30,7 +38,9 @@ public class TestService {
         //注释即可打开异常
 //        int i = 10 / 0;
 
-        Class.forName("xxx.xxx.xxx.xxx");
+        userDao.addUser(new User(1, "cc", new Date()));
+
+//        Class.forName("xxx.xxx.xxx.xxx");
         return 1;
     }
 

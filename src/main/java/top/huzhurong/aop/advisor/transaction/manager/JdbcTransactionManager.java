@@ -152,7 +152,7 @@ public class JdbcTransactionManager implements TransactionManager, IocContainerA
         if (iocContainer == null) {
             throw new IllegalStateException("inject iocContainer failed,this is a bug! ^v^ ");
         }
-        log.info("inject dataSource to jdbcTransactionManager");
-        this.dataSource = (DataSource) iocContainer.getBean("datasource");
+        log.info("inject dataSource to jdbcTransactionManager:" + iocContainer.getBean(DataSource.class));
+        this.dataSource = iocContainer.getBean(DataSource.class);
     }
 }
