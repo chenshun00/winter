@@ -39,6 +39,11 @@ public class Environment {
         return (String) Environment.context.get(key);
     }
 
+    public Object getStringOrDef(String key, Object defualt) {
+        return Environment.context.getOrDefault(key, defualt);
+    }
+
+
     public Integer getInteger(String key) {
         return (Integer) Environment.context.get(key);
     }

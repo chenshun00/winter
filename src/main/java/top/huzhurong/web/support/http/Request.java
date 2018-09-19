@@ -3,6 +3,8 @@ package top.huzhurong.web.support.http;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -10,6 +12,9 @@ import java.net.URISyntaxException;
  */
 public interface Request {
 
+    List<HttpHeader> headers();
+
+    Map<String, Object> params();
 
     String getMethod();
 

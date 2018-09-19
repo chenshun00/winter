@@ -4,11 +4,14 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultHttpRequest;
 import lombok.Getter;
 import lombok.Setter;
+import top.huzhurong.web.support.http.HttpHeader;
 import top.huzhurong.web.support.http.Request;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -22,6 +25,16 @@ public class SimpleHttpRequest implements Request {
 
     public SimpleHttpRequest(DefaultHttpRequest defaultHttpRequest) {
         this.defaultHttpRequest = defaultHttpRequest;
+    }
+
+    @Override
+    public List<HttpHeader> headers() {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> params() {
+        return null;
     }
 
     @Override
@@ -51,4 +64,5 @@ public class SimpleHttpRequest implements Request {
     public String protocolVersion() {
         return defaultHttpRequest.getProtocolVersion().protocolName();
     }
+
 }

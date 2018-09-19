@@ -27,10 +27,15 @@ public class CglibProxyTest extends InitTest {
     }
 
     @Test
-    public void transactionTest() throws ClassNotFoundException {
+    public void transactionTest() throws ClassNotFoundException, InterruptedException {
         TestService testService = (TestService) this.beanFactory.getBean("testService");
         top.huzhurong.ioc.transaction.Test test = top.huzhurong.ioc.transaction.Test.builder()
                 .age(22).id(18).name("test").build();
+        long l = System.currentTimeMillis();
         testService.addTest(test);
+        System.out.println(System.currentTimeMillis() - l);
+
+
+        Thread.sleep(1000000L);
     }
 }

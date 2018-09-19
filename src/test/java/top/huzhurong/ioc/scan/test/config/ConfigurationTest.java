@@ -27,6 +27,7 @@ public class ConfigurationTest implements EnvironmentAware {
     public DataSource dataSource() {
         DruidDataSource druidDataSource = new DruidDataSource();
         druidDataSource.setMaxActive(10);
+        druidDataSource.setInitialSize(5);
         if (InitTest.user.equals("root") && InitTest.password.equals("chenshun")) {
             System.err.println("出现错误请检查数据url,user,password是否替换，未出现错误请忽略该消息");
         }
