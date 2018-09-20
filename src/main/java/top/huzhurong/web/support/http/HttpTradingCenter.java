@@ -1,11 +1,10 @@
 package top.huzhurong.web.support.http;
 
-import io.netty.handler.codec.http.DefaultHttpRequest;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
 import top.huzhurong.web.support.impl.SimpleHttpRequest;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
@@ -22,12 +21,12 @@ public class HttpTradingCenter {
      * @return http响应
      * @throws URISyntaxException
      */
-    public HttpResponse handleRequest(HttpRequest httpRequest) throws URISyntaxException {
-        SimpleHttpRequest simpleHttpRequest = new SimpleHttpRequest((DefaultHttpRequest) httpRequest);
-        URI uri = simpleHttpRequest.getURI();
-        String path = uri.getPath();
-        String method = simpleHttpRequest.getMethod();
-        //根据path去找到这个controler
+    public HttpResponse handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) throws URISyntaxException {
+        SimpleHttpRequest simpleHttpRequest = SimpleHttpRequest.buildRequest(ctx, httpRequest);
+
+
+
+
         return null;
     }
 

@@ -32,6 +32,12 @@ public class NettyDecoderTest {
         String uri = decoder.uri();
         Assert.assertEquals("/hello?recipient=world&x=1;y=2", uri);
 
+        String s = decoder.rawQuery();
+        Assert.assertEquals("recipient=world&x=1;y=2", s);
+
+        String s1 = decoder.rawPath();
+        System.out.println(s1);
+
         Map<String, List<String>> parameters = decoder.parameters();
         Assert.assertEquals(3, parameters.size());
 

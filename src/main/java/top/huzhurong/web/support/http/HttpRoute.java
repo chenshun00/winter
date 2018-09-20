@@ -2,8 +2,7 @@ package top.huzhurong.web.support.http;
 
 /**
  * @author luobo.cs@raycloud.com
- * @since 2018/9/18
+ * @since 2018/9/20
  */
-public interface Response {
-
+public class HttpRoute {
 }
