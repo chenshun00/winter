@@ -6,10 +6,10 @@ package top.huzhurong.web.support;
  */
 public interface Server {
 
-    void beforeStart() throws Exception;
+    Server beforeStart();
 
-    void start() throws Exception;
+    void start();
 
-    void close() throws Exception;
+    void close();
 
 }

@@ -20,6 +20,12 @@ import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
 import top.huzhurong.ioc.scan.BeanScanner;
 import top.huzhurong.web.annotation.Controller;
+import top.huzhurong.web.netty.HttpServerHandler;
+import top.huzhurong.web.netty.NettyServer;
+import top.huzhurong.web.support.http.HttpMatcher;
+import top.huzhurong.web.support.http.HttpRouteBuilder;
+import top.huzhurong.web.support.http.HttpTradingCenter;
+import top.huzhurong.web.support.http.Route;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -40,6 +46,7 @@ public class Init {
     private Class<?> bootClass;
     @Getter
     private IocContainer iocContainer = new DefaultIocContainer();
+
     private BeanScanner beanScanner = new BeanScanner();
 
     private AtomicBoolean atomicBoolean = new AtomicBoolean(false);
@@ -60,6 +67,20 @@ public class Init {
                 .collect(Collectors.toSet());
     }
 
+    private void prepare(Set<ClassInfo> info) {
+        info.add(new ClassInfo(Environment.class, StringUtil.handleClassName(Environment.class)));
+        info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
+
+        info.add(new ClassInfo(HttpTradingCenter.class, StringUtil.handleClassName(HttpTradingCenter.class)));
+        info.add(new ClassInfo(HttpRouteBuilder.class, StringUtil.handleClassName(HttpRouteBuilder.class)));
+        info.add(new ClassInfo(HttpMatcher.class, StringUtil.handleClassName(HttpMatcher.class)));
+
+        info.add(new ClassInfo(NettyServer.class, StringUtil.handleClassName(NettyServer.class)));
+        info.add(new ClassInfo(HttpServerHandler.class, StringUtil.handleClassName(HttpServerHandler.class)));
+
+        AopConfigUtil.handleConfig(info, this.bootClass);
+    }
+
     public void instantiation() {
         if (atomicBoolean.get()) {
             throw new IllegalStateException("Repeat registration exception");
@@ -70,10 +91,7 @@ public class Init {
 
         Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
 
-        info.add(new ClassInfo(Environment.class, StringUtil.handleClassName(Environment.class)));
-        info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
-        //handle transaction and aop config
-        AopConfigUtil.handleConfig(info, bootClass);
+        prepare(info);
 
         //handle bean name
         Set<ClassInfo> collect = info.stream().map(this::handleName).collect(Collectors.toSet());
@@ -94,8 +112,11 @@ public class Init {
         for (ClassInfo classInfo : collect) {
             for (String beanName : beanNameForType) {
                 BeanProcessor beanProcessor = (BeanProcessor) iocContainer.getBean(beanName);
-                Object bean = beanProcessor.processBeforeInit(this.iocContainer.getBean(classInfo.getClassName()));
-                iocContainer.put(classInfo.getClassName(), bean);
+                Object origin = this.iocContainer.getBean(classInfo.getClassName());
+                Object bean = beanProcessor.processBeforeInit(origin);
+                if (!origin.equals(bean)) {
+                    iocContainer.put(classInfo.getClassName(), bean);
+                }
             }
         }
         collect.stream().map(ClassInfo::getClassName).map(iocContainer::getBean).filter(this::needInject).forEach(this::inject);
@@ -107,6 +128,25 @@ public class Init {
                 iocContainer.put(classInfo.getClassName(), bean);
             }
         }
+
+
+        List<String> list = this.iocContainer.beanNamesList();
+        List<Route> routeList = new LinkedList<>();
+        HttpRouteBuilder builder = this.iocContainer.getBean(HttpRouteBuilder.class);
+        for (String ii : list) {
+            Object bean = this.iocContainer.getBean(ii);
+            if (bean.getClass().getAnnotation(Controller.class) != null) {
+                routeList.addAll(builder.buildRoute(bean));
+            }
+        }
+
+        HttpMatcher matcher = this.iocContainer.getBean(HttpMatcher.class);
+        matcher.buildRouteMap(routeList);
+
+
+        final NettyServer server = this.iocContainer.getBean(NettyServer.class);
+        server.beforeStart().start();
+        Runtime.getRuntime().addShutdownHook(new Thread(server::close));
     }
 
     private void initBean(Set<ClassInfo> collect) {
@@ -164,10 +204,12 @@ public class Init {
                 if (bean instanceof IocContainerAware) {
                     IocContainerAware aware = (IocContainerAware) bean;
                     aware.setIocContainer(this.iocContainer);
-                } else if (bean instanceof BeanFactoryAware) {
+                }
+                if (bean instanceof BeanFactoryAware) {
                     BeanFactoryAware aware = (BeanFactoryAware) bean;
                     aware.setBeanFactory(this.iocContainer);
-                } else if (bean instanceof EnvironmentAware) {
+                }
+                if (bean instanceof EnvironmentAware) {
                     EnvironmentAware aware = (EnvironmentAware) bean;
                     aware.setEnvironment(this.iocContainer.getBean(Environment.class));
                 }

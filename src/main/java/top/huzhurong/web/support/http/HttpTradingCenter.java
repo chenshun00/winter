@@ -13,13 +13,16 @@ import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import io.netty.handler.codec.json.JsonObjectDecoder;
 import lombok.Setter;
 import top.huzhurong.ioc.bean.IocContainer;
+import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
+import top.huzhurong.web.support.Interceptor;
 import top.huzhurong.web.support.impl.SimpleHttpRequest;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -27,28 +30,32 @@ import java.util.Set;
  * @since 2018/9/19
  */
 @Setter
-public class HttpTradingCenter implements IocContainerAware {
+public class HttpTradingCenter implements IocContainerAware, InitAware {
 
     private final static String EMPTY = " ";
 
     private IocContainer iocContainer;
     private HttpMatcher httpMatcher;
 
+    private List<Interceptor> interceptors;
+
     /**
      * 根据method和uri，请求头，cookie，参数这些信息去找到最符合我们请求的一个数据
      *
      * @param httpRequest http 请求
-     * @return http响应
      */
     public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         SimpleHttpRequest simpleHttpRequest = SimpleHttpRequest.buildRequest(ctx, httpRequest);
+
         Route route = httpMatcher.match(simpleHttpRequest);
         if (route == null) {
             notFound(ctx, httpRequest, simpleHttpRequest);
             return;
         }
-        //设置参数，参数名是已知的
-        //route.setParams(simpleHttpRequest.getParams());
+
+        if (interceptors != null && interceptors.size() != 0) {
+            //todo 等待实现
+        }
 
         Method method = route.getMethod();
         Object target = route.getTarget();
@@ -71,12 +78,6 @@ public class HttpTradingCenter implements IocContainerAware {
 
     private void toClient(ChannelHandlerContext ctx, HttpRequest httpRequest, SimpleHttpRequest simpleHttpRequest) {
 
-    }
-
-    @Override
-    public void setIocContainer(IocContainer iocContainer) {
-        this.iocContainer = iocContainer;
-        this.httpMatcher = iocContainer.getBean(HttpMatcher.class);
     }
 
     private void serverError(ChannelHandlerContext ctx, HttpRequest request, SimpleHttpRequest simpleHttpRequest) {
@@ -113,6 +114,21 @@ public class HttpTradingCenter implements IocContainerAware {
         ChannelFuture future = ctx.channel().writeAndFlush(response);
         if (close) {
             future.addListener(ChannelFutureListener.CLOSE);
+        }
+    }
+
+
+    @Override
+    public void setIocContainer(IocContainer iocContainer) {
+        this.iocContainer = iocContainer;
+        this.httpMatcher = this.iocContainer.getBean(HttpMatcher.class);
+        this.interceptors = this.iocContainer.getBeanInstancesForType(Interceptor.class);
+    }
+
+    @Override
+    public void initBean() {
+        if (httpMatcher == null) {
+            throw new RuntimeException("httpMatcher can't be null");
         }
     }
 }

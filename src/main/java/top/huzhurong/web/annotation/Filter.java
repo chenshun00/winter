@@ -1,7 +1,5 @@
 package top.huzhurong.web.annotation;
 
-import top.huzhurong.web.support.http.RequestMethod;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -9,15 +7,16 @@ import java.lang.annotation.Target;
 
 /**
  * @author luobo.cs@raycloud.com
- * @since 2018/9/18
+ * @since 2018/9/21
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RequestMapping {
+@Target(ElementType.TYPE)
+public @interface Filter {
 
-    String value();
+    String value() default "";
 
-    RequestMethod[] method() default {};
-
-    String[] header() default {};
+    /**
+     * 越高优先级越低
+     */
+    int order() default Integer.MAX_VALUE;
 }

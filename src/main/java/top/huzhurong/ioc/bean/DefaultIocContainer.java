@@ -17,6 +17,7 @@ public class DefaultIocContainer implements IocContainer {
 
     private Map<String, Object> context;
     private Map<String, BeanInfo> beanInfoMap;
+    private List<String> beanNamesList = new ArrayList<>(256);
 
     public DefaultIocContainer() {
         context = new ConcurrentHashMap<>(128);
@@ -71,10 +72,23 @@ public class DefaultIocContainer implements IocContainer {
     }
 
     @Override
+    public <T> List<T> getBeanInstancesForType(Class<T> type) {
+        List<T> list = new LinkedList<>();
+        for (Map.Entry<String, BeanInfo> entry : beanInfoMap.entrySet()) {
+            if (type.isAssignableFrom(entry.getValue().getAClass())) {
+                list.add(type.cast(entry.getValue().getObject()));
+            }
+        }
+        return list;
+    }
+
+    @Override
     public void put(String name, Object object) {
         context.put(name, object);
         BeanInfo beanInfo = new BeanInfo(object, name);
         beanInfoMap.put(name, beanInfo);
+        beanNamesList.remove(name);
+        beanNamesList.add(name);
     }
 
     public List<Object> aspectj() {
@@ -101,5 +115,10 @@ public class DefaultIocContainer implements IocContainer {
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<String> beanNamesList() {
+        return this.beanNamesList;
     }
 }

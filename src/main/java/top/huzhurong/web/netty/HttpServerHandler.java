@@ -5,6 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
+import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.web.support.http.HttpTradingCenter;
 
 /**
@@ -14,6 +15,7 @@ import top.huzhurong.web.support.http.HttpTradingCenter;
 @ChannelHandler.Sharable
 public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
 
+    @Inject
     private HttpTradingCenter httpTradingCenter;
 
     @Override

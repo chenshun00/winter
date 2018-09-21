@@ -21,18 +21,12 @@ public class HttpMatcher {
 
     public void buildRouteMap(@NonNull List<Route> routeList) {
         for (Route route : routeList) {
-            routeMap.putAll(toRoute(route));
+            if (routeMap.get(route.getMapping()) != null) {
+                throw new RuntimeException("Duplicate RequestMapping:" + route.getTargetClass().getName());
+            } else {
+                routeMap.put(route.getMapping(), route);
+            }
         }
-    }
-
-    public Map<String, Route> toRoute(@NonNull Route route) {
-        List<String> tag = route.getTag();
-        if (tag.size() == 0) {
-            throw new RuntimeException(route + "is illegal");
-        }
-        Map<String, Route> routeMap = new HashMap<>();
-        tag.forEach(tt -> routeMap.put(tt, route));
-        return routeMap;
     }
 
     public Route match(SimpleHttpRequest httpRequest) {

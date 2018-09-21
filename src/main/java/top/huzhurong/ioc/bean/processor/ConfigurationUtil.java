@@ -52,7 +52,6 @@ public class ConfigurationUtil implements IocContainerAware {
         Class<?> returnType = method.getReturnType();
         Object invoke = null;
         try {
-            //这里的this肯定是有问题的啊，肯定不是的啊
             invoke = method.invoke(bean);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();

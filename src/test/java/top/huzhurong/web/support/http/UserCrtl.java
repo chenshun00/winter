@@ -8,7 +8,7 @@ import top.huzhurong.web.annotation.RequestMapping;
  * @author luobo.cs@raycloud.com
  * @since 2018/9/20
  */
-@RequestMapping
+@RequestMapping("info")
 @Controller
 public class UserCrtl {
 

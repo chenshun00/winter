@@ -1,7 +1,6 @@
 package top.huzhurong.web.support.http;
 
 import top.huzhurong.aop.core.StringUtil;
-import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.RequestMapping;
 
@@ -16,22 +15,16 @@ import java.util.List;
  */
 public class HttpRouteBuilder {
 
-    public List<Route> buildRoute(ClassInfo classInfo, Object instance) {
+    public List<Route> buildRoute(Object instance) {
         List<Route> routeList = new LinkedList<>();
-        RequestMapping requestMapping = classInfo.getaClass().getDeclaredAnnotation(RequestMapping.class);
-        Method[] declaredMethods = classInfo.getaClass().getDeclaredMethods();
+        RequestMapping requestMapping = instance.getClass().getDeclaredAnnotation(RequestMapping.class);
+        Method[] declaredMethods = instance.getClass().getDeclaredMethods();
         for (Method declaredMethod : declaredMethods) {
             if (Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isStatic(declaredMethod.getModifiers())) {
                 RequestMapping declaredAnnotation = declaredMethod.getDeclaredAnnotation(RequestMapping.class);
                 if (declaredAnnotation != null) {
                     Json json = declaredMethod.getDeclaredAnnotation(Json.class);
                     RequestMethod[] requestMethods = declaredAnnotation.method();
-                    Route route = new Route();
-                    route.setJson(json != null);
-                    route.setTargetClass(classInfo.getaClass());
-                    route.setMethod(declaredMethod);
-                    route.setTarget(instance);
-                    route.setRequestMethods(requestMethods);
 
                     List<String> tags = new LinkedList<>();
 
@@ -42,7 +35,7 @@ public class HttpRouteBuilder {
 
                     String child = declaredAnnotation.value();
                     if (StringUtil.containSpace(child)) {
-                        throw new RuntimeException("class:" + classInfo.getaClass().getName() +
+                        throw new RuntimeException("class:" + instance.getClass().getName() +
                                 "--RequestMapping#value can't be null or contain writeSpace");
                     }
                     if (!child.startsWith("/")) {
@@ -61,8 +54,18 @@ public class HttpRouteBuilder {
                             tags.add(tag);
                         }
                     }
-                    route.setTag(tags);
-                    routeList.add(route);
+
+                    for (String tag : tags) {
+                        Route route = new Route();
+                        route.setJson(json != null);
+                        route.setTargetClass(instance.getClass());
+                        route.setMethod(declaredMethod);
+                        route.setTarget(instance);
+                        route.setMapping(tag);
+                        routeList.add(route);
+                    }
+
+
                 }
             }
         }

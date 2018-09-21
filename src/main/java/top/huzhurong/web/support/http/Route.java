@@ -6,7 +6,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -18,12 +17,11 @@ import java.util.List;
 @ToString
 public class Route {
 
-    private RequestMethod[] requestMethods;
     private Class<?> targetClass;
     private Object target;
     private Method method;
     private Object[] params;
-    private List<String> tag;
     private boolean json;
+    private String mapping;
 
 }

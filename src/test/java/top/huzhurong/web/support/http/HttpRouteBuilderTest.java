@@ -2,7 +2,6 @@ package top.huzhurong.web.support.http;
 
 import org.junit.Before;
 import org.junit.Test;
-import top.huzhurong.ioc.bean.ClassInfo;
 
 import java.util.List;
 
@@ -24,8 +23,7 @@ public class HttpRouteBuilderTest {
     @Test
     public void buildRoute() {
         UserCrtl userCrtl = new UserCrtl();
-        ClassInfo classInfo = new ClassInfo(userCrtl.getClass(), "userCrtl");
-        List<Route> routeList = httpRouteBuilder.buildRoute(classInfo, userCrtl);
+        List<Route> routeList = httpRouteBuilder.buildRoute(userCrtl);
 
         assertEquals(4, routeList.size());
 
