@@ -23,4 +23,11 @@ public class StringUtil {
         return simpleName.substring(0, 1).toLowerCase() + simpleName.substring(1);
     }
 
+    public static boolean containSpace(String values) {
+        if (values == null || values.trim().length() == 0) {
+            return true;
+        }
+        return values.contains(" ");
+    }
+
 }

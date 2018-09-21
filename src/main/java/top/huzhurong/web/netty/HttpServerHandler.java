@@ -5,7 +5,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponse;
 import top.huzhurong.web.support.http.HttpTradingCenter;
 
 /**
@@ -26,9 +25,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<HttpObject> {
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject msg) throws Exception {
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
-            HttpResponse response = httpTradingCenter.handleRequest(req);
-            //这里写的不对，还没有把respone解析掉，理论上netty是不会帮我把HttpResponse
-            ctx.channel().write(response);
+            httpTradingCenter.handleRequest(ctx, req);
         }
     }
 }

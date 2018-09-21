@@ -100,7 +100,7 @@ public class SimpleHttpRequest {
         return WebUtil.ip(this.ctx, this.httpRequest);
     }
 
-    public String protocolVersion() {
+    public String getProtocal() {
         return this.httpRequest.protocolVersion().protocolName();
     }
 
