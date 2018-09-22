@@ -40,6 +40,7 @@ public class SimpleHttpRequest {
 
     private Map<String, Object> params;
 
+    //解析参数给route用
     public static SimpleHttpRequest buildRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         return SimpleHttpRequest.builder().ctx(ctx).httpRequest(httpRequest)
                 .method(httpRequest.method().name())

@@ -1,13 +1,16 @@
-package top.huzhurong.web.support.http;
+package top.huzhurong.web.support.route;
 
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.RequestMapping;
+import top.huzhurong.web.support.http.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -57,6 +60,14 @@ public class HttpRouteBuilder {
 
                     for (String tag : tags) {
                         Route route = new Route();
+                        Map<String, Class<?>> routeParameters = route.getParameters();
+                        Parameter[] parameters = declaredMethod.getParameters();
+                        for (Parameter parameter : parameters) {
+                            String name = parameter.getName();
+                            Class<?> type = parameter.getType();
+                            routeParameters.put(name, type);
+                        }
+
                         route.setJson(json != null);
                         route.setTargetClass(instance.getClass());
                         route.setMethod(declaredMethod);

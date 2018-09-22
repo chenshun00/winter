@@ -1,4 +1,4 @@
-package top.huzhurong.web.support.http;
+package top.huzhurong.web.support.route;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -6,6 +6,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -20,7 +22,7 @@ public class Route {
     private Class<?> targetClass;
     private Object target;
     private Method method;
-    private Object[] params;
+    private Map<String, Class<?>> parameters = new HashMap<>(8);
     private boolean json;
     private String mapping;
 

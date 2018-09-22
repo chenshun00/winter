@@ -1,4 +1,4 @@
-package top.huzhurong.web.support.http;
+package top.huzhurong.web.support.route;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,6 +34,17 @@ public class HttpMatcher {
         String method = httpRequest.getMethod();
         String key = (path + "#" + method).toUpperCase();
         return routeMap.get(key);
+    }
+
+    public Route blurryMatch(SimpleHttpRequest httpRequest) {
+        String path = httpRequest.getPath();
+        for (Map.Entry<String, Route> entry : routeMap.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith(path)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
 }
