@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import top.huzhurong.web.support.route.HttpRouteBuilder;
 import top.huzhurong.web.support.route.Route;
 
-import java.lang.reflect.Method;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,15 +74,17 @@ public class HttpRouteBuilderTest {
 
     @Test
     public void testParameter() {
-        Method[] methods = HttpRouteBuilderTest.class.getDeclaredMethods();
+        Executable[] methods = HttpRouteBuilderTest.class.getDeclaredMethods();
         if (standardReflectionAvailable) {
-            for (Method method : methods) {
+            for (Executable method : methods) {
                 String name = method.getName();
                 if (name.equalsIgnoreCase("hello")) {
                     Parameter[] parameters = method.getParameters();
                     for (Parameter parameter : parameters) {
-                        String parameterName = parameter.getName();
-                        System.out.println("parameterName:" + parameterName);
+                        if (parameter.isNamePresent()) {
+                            String parameterName = parameter.getName();
+                            System.out.println("parameterName:" + parameterName);
+                        }
                     }
                 }
             }

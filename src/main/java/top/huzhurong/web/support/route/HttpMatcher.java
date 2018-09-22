@@ -30,6 +30,7 @@ public class HttpMatcher {
     }
 
     public Route match(SimpleHttpRequest httpRequest) {
+
         String path = httpRequest.getPath();
         String method = httpRequest.getMethod();
         String key = (path + "#" + method).toUpperCase();

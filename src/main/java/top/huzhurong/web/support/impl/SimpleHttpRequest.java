@@ -13,7 +13,10 @@ import top.huzhurong.web.support.http.HttpCookie;
 import top.huzhurong.web.support.http.HttpHeader;
 import top.huzhurong.web.util.WebUtil;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -22,7 +25,7 @@ import java.util.*;
 @Getter
 @Setter
 @Builder
-public class SimpleHttpRequest {
+public class SimpleHttpRequest implements Request {
 
     private ChannelHandlerContext ctx;
 
@@ -47,7 +50,6 @@ public class SimpleHttpRequest {
                 .httpHeaders(parseHttpHeader(httpRequest))
                 .httpCookies(parseCookie(httpRequest))
                 .uri(httpRequest.uri())
-                .params(parseParams(httpRequest))
                 .path(parsePath(httpRequest))
                 .build();
     }
@@ -55,21 +57,6 @@ public class SimpleHttpRequest {
     private static String parsePath(HttpRequest httpRequest) {
         QueryStringDecoder decoder = new QueryStringDecoder(httpRequest.uri());
         return decoder.path();
-    }
-
-    private static Map<String, Object> parseParams(HttpRequest httpRequest) {
-        String uri = httpRequest.uri();
-        QueryStringDecoder decoder = new QueryStringDecoder(uri);
-        Map<String, List<String>> parameters = decoder.parameters();
-        Map<String, Object> parseParams = new HashMap<>();
-        parameters.forEach((key, value) -> {
-            if (value.size() == 1) {
-                parseParams.put(key, value.get(0));
-            } else {
-                parseParams.put(key, value);
-            }
-        });
-        return parseParams;
     }
 
     private static List<HttpHeader> parseHttpHeader(HttpRequest httpRequest) {

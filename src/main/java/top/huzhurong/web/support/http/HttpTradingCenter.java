@@ -15,8 +15,12 @@ import lombok.Setter;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
+import top.huzhurong.web.asm.AsmParameterNameDiscover;
+import top.huzhurong.web.asm.ParameterNameDiscoverer;
 import top.huzhurong.web.support.Interceptor;
+import top.huzhurong.web.support.impl.Response;
 import top.huzhurong.web.support.impl.SimpleHttpRequest;
+import top.huzhurong.web.support.impl.SimpleHttpResponse;
 import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.Route;
 
@@ -35,91 +39,15 @@ import java.util.Set;
 @Setter
 public class HttpTradingCenter implements IocContainerAware, InitAware {
 
+    private final static String JSON = "application/json;charset=utf-8";
+    private final static String XML = "application/xml;charset=utf-8";
     private IocContainer iocContainer;
     private HttpMatcher httpMatcher;
 
     private List<Interceptor> interceptors;
-
-    /**
-     * 根据method和uri，请求头，cookie，参数这些信息去找到最符合我们请求的一个数据
-     *
-     * @param httpRequest http 请求
-     */
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
-        SimpleHttpRequest simpleHttpRequest = SimpleHttpRequest.buildRequest(ctx, httpRequest);
-
-        Route route = httpMatcher.match(simpleHttpRequest);
-        if (route == null) {
-
-            Route blurryMatch = httpMatcher.blurryMatch(simpleHttpRequest);
-            if (blurryMatch != null) {
-                methodError(ctx, httpRequest);
-            } else {
-                notFound(ctx, httpRequest);
-            }
-            return;
-        }
-
-        if (interceptors != null && interceptors.size() != 0) {
-            //todo 等待实现
-        }
-
-        Method method = route.getMethod();
-        Object target = route.getTarget();
-        Map<String, Class<?>> routeParameters = route.getParameters();
-
-        String requestMethod = simpleHttpRequest.getMethod();
-        Object[] params = new Object[routeParameters.size()];
-        //其实在这里可以做很多事的，例如时间戳转换，数据集合成对象，转型
-        if (requestMethod.equalsIgnoreCase("GET")) {
-            Map<String, Object> parameters = simpleHttpRequest.getParams();
-            //实际参数便利
-            int i = 0;
-            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                Class<?> aClass = routeParameters.get(entry.getKey());
-
-                if (aClass == null) {
-                    //异常跑出去
-                    serverError(ctx, httpRequest);
-                    return;
-                }
-                System.out.println(entry.getValue());
-                if (aClass.isAssignableFrom(Integer.class)) {
-                    params[i] = Integer.parseInt((String) entry.getValue());
-                } else {
-                    params[i] = aClass.cast(entry.getValue());
-                }
-
-                i++;
-            }
-
-            try {
-                Object invoke = method.invoke(target, params);
-                if (route.isJson()) {
-                    toClient(ctx, httpRequest, invoke);
-                    return;
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-                serverError(ctx, httpRequest);
-                return;
-            }
-        }
-
-        try {
-            Object invoke = method.invoke(target, params);
-            if (route.isJson()) {
-                ctx.channel().pipeline().addLast(new JsonObjectDecoder());
-                toClient(ctx, httpRequest, invoke);
-            } else {
-                //将数据用html格式返回
-                toClient(ctx, httpRequest, simpleHttpRequest);
-            }
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            serverError(ctx, httpRequest);
-        }
-    }
+    private final static String HTML = "text/html; charset=utf-8";
+    private ParameterNameDiscoverer parameterNameDiscoverer = new AsmParameterNameDiscover();
+    private HttpParameterParser httpParameterParser = new HttpParameterParser();
 
     private void toClient(ChannelHandlerContext ctx, HttpRequest request, Object object) {
         String json = JSONObject.toJSONString(Result.ofSuccess(object));
@@ -127,7 +55,6 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
         response(ctx, request, response, byteBuf);
     }
-
 
     private void serverError(ChannelHandlerContext ctx, HttpRequest request) {
         Result failed = Result.offail("Internal Server Error");
@@ -145,7 +72,6 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         response(ctx, request, response, byteBuf);
     }
 
-
     private void notFound(ChannelHandlerContext ctx, HttpRequest request) {
         Result failed = Result.offail("Mapping Failed,Not Found");
         String string = JSONObject.toJSONString(failed);
@@ -154,12 +80,140 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         response(ctx, request, response, byteBuf);
     }
 
+    @Override
+    public void setIocContainer(IocContainer iocContainer) {
+        this.iocContainer = iocContainer;
+        this.httpMatcher = this.iocContainer.getBean(HttpMatcher.class);
+        this.interceptors = this.iocContainer.getBeanInstancesForType(Interceptor.class);
+    }
+
+    @Override
+    public void initBean() {
+        if (httpMatcher == null) {
+            throw new RuntimeException("httpMatcher can't be null");
+        }
+    }
+
+    /**
+     * 根据method和uri，请求头，cookie，参数这些信息去找到最符合我们请求的一个数据
+     *
+     * @param httpRequest http 请求
+     */
+    public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+        SimpleHttpRequest request = SimpleHttpRequest.buildRequest(ctx, httpRequest);
+        Response response = SimpleHttpResponse.buildResponse(ctx, request);
+
+        Route route = httpMatcher.match(request);
+        if (route == null) {
+            Route blurryMatch = httpMatcher.blurryMatch(request);
+            if (blurryMatch != null) {
+                methodError(ctx, httpRequest);
+            } else {
+                notFound(ctx, httpRequest);
+            }
+            return;
+        }
+
+        Map<String, Object> paramMap;
+        if (request.getMethod().equalsIgnoreCase("GET")) {
+            paramMap = httpParameterParser.parseGetParams(httpRequest);
+        } else {
+            if (request.getMethod().equalsIgnoreCase("POST")
+                    || request.getMethod().equalsIgnoreCase("PUT")
+                    || request.getMethod().equalsIgnoreCase("DELETE")) {
+                paramMap = httpParameterParser.parsetPostParams(ctx, httpRequest, response);
+            } else {
+                response.sendError(HttpResponseStatus.BAD_REQUEST, "不支持" + request.getMethod());
+                return;
+            }
+        }
+        request.setParams(paramMap);
+
+        //response
+        if (interceptors != null && interceptors.size() != 0) {
+            for (Interceptor interceptor : interceptors) {
+                if (!interceptor.preHandle(request, response)) {
+                    response.sendError(HttpResponseStatus.BAD_REQUEST);
+                    return;
+                }
+            }
+        }
+
+        Method method = route.getMethod();
+        Object target = route.getTarget();
+        Map<String, Class<?>> routeParameters = route.getParameters();
+
+        String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
+
+        String requestMethod = request.getMethod();
+        Object[] params = new Object[routeParameters.size()];
+        //其实在这里可以做很多事的，例如时间戳转换，数据集合成对象，转型
+        if (requestMethod.equalsIgnoreCase("GET")) {
+            Map<String, Object> parameters = request.getParams();
+            //实际参数遍历
+            try {
+                int i = 0;
+                for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                    Class<?> aClass = routeParameters.get(entry.getKey());
+
+                    if (aClass == null) {
+                        serverError(ctx, httpRequest);
+                        return;
+                    }
+
+                    if (aClass.isAssignableFrom(Integer.class)) {
+                        params[i] = Integer.parseInt((String) entry.getValue());
+                    } else {
+                        params[i] = aClass.cast(entry.getValue());
+                    }
+                    i++;
+                }
+            } catch (Exception e) {
+
+            }
+
+            try {
+                Object invoke = method.invoke(target, params);
+
+                if (interceptors != null && interceptors.size() != 0) {
+                    for (Interceptor interceptor : interceptors) {
+                        interceptor.postHandle(request, response);
+                    }
+                }
+
+                if (route.isJson()) {
+                    toClient(ctx, httpRequest, invoke);
+                    return;
+                }
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+                serverError(ctx, httpRequest);
+                return;
+            }
+        }
+
+        try {
+            Object invoke = method.invoke(target, params);
+
+            if (route.isJson()) {
+                ctx.channel().pipeline().addLast(new JsonObjectDecoder());
+                toClient(ctx, httpRequest, invoke);
+            } else {
+                //将数据用html格式返回
+                toClient(ctx, httpRequest, request);
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            serverError(ctx, httpRequest);
+        }
+    }
+
     private void response(ChannelHandlerContext ctx, HttpRequest request, FullHttpResponse response, ByteBuf byteBuf) {
         boolean close = request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE, true)
                 || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
                 && !request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE, true);
 
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json; charset=UTF-8");
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, JSON);
         if (!close) {
             response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
         }
@@ -178,21 +232,6 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         ChannelFuture future = ctx.channel().writeAndFlush(response);
         if (close) {
             future.addListener(ChannelFutureListener.CLOSE);
-        }
-    }
-
-
-    @Override
-    public void setIocContainer(IocContainer iocContainer) {
-        this.iocContainer = iocContainer;
-        this.httpMatcher = this.iocContainer.getBean(HttpMatcher.class);
-        this.interceptors = this.iocContainer.getBeanInstancesForType(Interceptor.class);
-    }
-
-    @Override
-    public void initBean() {
-        if (httpMatcher == null) {
-            throw new RuntimeException("httpMatcher can't be null");
         }
     }
 }
