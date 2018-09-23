@@ -13,4 +13,7 @@ import lombok.ToString;
 @ToString
 public class User {
     private String name;
+    private Integer age;
+    private String hello;
+    private String world;
 }

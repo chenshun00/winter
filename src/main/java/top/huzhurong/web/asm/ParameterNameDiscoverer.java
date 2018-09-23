@@ -1,6 +1,9 @@
 package top.huzhurong.web.asm;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -8,6 +11,10 @@ import java.lang.reflect.Method;
  */
 public interface ParameterNameDiscoverer {
 
-    String[] getParameterNames(Method method);
+    Map<String, String> getParameterNames(Method method);
+
+    default List<String> getParameters(Method method) {
+        return new ArrayList<>();
+    }
 
 }

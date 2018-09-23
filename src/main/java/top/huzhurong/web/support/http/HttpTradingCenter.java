@@ -1,22 +1,12 @@
 package top.huzhurong.web.support.http;
 
-import com.alibaba.fastjson.JSONObject;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
-import io.netty.handler.codec.json.JsonObjectDecoder;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.Setter;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
-import top.huzhurong.web.asm.AsmParameterNameDiscover;
-import top.huzhurong.web.asm.ParameterNameDiscoverer;
 import top.huzhurong.web.support.Interceptor;
 import top.huzhurong.web.support.impl.Response;
 import top.huzhurong.web.support.impl.SimpleHttpRequest;
@@ -24,13 +14,11 @@ import top.huzhurong.web.support.impl.SimpleHttpResponse;
 import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.Route;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -39,46 +27,11 @@ import java.util.Set;
 @Setter
 public class HttpTradingCenter implements IocContainerAware, InitAware {
 
-    private final static String JSON = "application/json;charset=utf-8";
-    private final static String XML = "application/xml;charset=utf-8";
     private IocContainer iocContainer;
     private HttpMatcher httpMatcher;
 
     private List<Interceptor> interceptors;
-    private final static String HTML = "text/html; charset=utf-8";
-    private ParameterNameDiscoverer parameterNameDiscoverer = new AsmParameterNameDiscover();
     private HttpParameterParser httpParameterParser = new HttpParameterParser();
-
-    private void toClient(ChannelHandlerContext ctx, HttpRequest request, Object object) {
-        String json = JSONObject.toJSONString(Result.ofSuccess(object));
-        ByteBuf byteBuf = Unpooled.copiedBuffer(json.getBytes(StandardCharsets.UTF_8));
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
-        response(ctx, request, response, byteBuf);
-    }
-
-    private void serverError(ChannelHandlerContext ctx, HttpRequest request) {
-        Result failed = Result.offail("Internal Server Error");
-        String string = JSONObject.toJSONString(failed);
-        ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR, byteBuf);
-        response(ctx, request, response, byteBuf);
-    }
-
-    private void methodError(ChannelHandlerContext ctx, HttpRequest request) {
-        Result failed = Result.offail("Http Request Method Not Acceptable");
-        String string = JSONObject.toJSONString(failed);
-        ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_ACCEPTABLE, byteBuf);
-        response(ctx, request, response, byteBuf);
-    }
-
-    private void notFound(ChannelHandlerContext ctx, HttpRequest request) {
-        Result failed = Result.offail("Mapping Failed,Not Found");
-        String string = JSONObject.toJSONString(failed);
-        ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf);
-        response(ctx, request, response, byteBuf);
-    }
 
     @Override
     public void setIocContainer(IocContainer iocContainer) {
@@ -107,9 +60,9 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         if (route == null) {
             Route blurryMatch = httpMatcher.blurryMatch(request);
             if (blurryMatch != null) {
-                methodError(ctx, httpRequest);
+                ((SimpleHttpResponse) response).methodError(ctx, httpRequest);
             } else {
-                notFound(ctx, httpRequest);
+                ((SimpleHttpResponse) response).notFound(ctx, httpRequest);
             }
             return;
         }
@@ -141,97 +94,98 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
 
         Method method = route.getMethod();
         Object target = route.getTarget();
+
         Map<String, Class<?>> routeParameters = route.getParameters();
-
-        String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
-
-        String requestMethod = request.getMethod();
         Object[] params = new Object[routeParameters.size()];
-        //其实在这里可以做很多事的，例如时间戳转换，数据集合成对象，转型
-        if (requestMethod.equalsIgnoreCase("GET")) {
-            Map<String, Object> parameters = request.getParams();
-            //实际参数遍历
-            try {
-                int i = 0;
-                for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                    Class<?> aClass = routeParameters.get(entry.getKey());
-
-                    if (aClass == null) {
-                        serverError(ctx, httpRequest);
-                        return;
-                    }
-
-                    if (aClass.isAssignableFrom(Integer.class)) {
-                        params[i] = Integer.parseInt((String) entry.getValue());
-                    } else {
-                        params[i] = aClass.cast(entry.getValue());
-                    }
-                    i++;
-                }
-            } catch (Exception e) {
-
+        Map<String, Object> parameters = request.getParams();
+        try {
+            int i = 0;
+            for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
+                Class<?> aClass = routeParameters.get(entry.getKey());
+                params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
             }
-
-            try {
-                Object invoke = method.invoke(target, params);
-
-                if (interceptors != null && interceptors.size() != 0) {
-                    for (Interceptor interceptor : interceptors) {
-                        interceptor.postHandle(request, response);
-                    }
-                }
-
-                if (route.isJson()) {
-                    toClient(ctx, httpRequest, invoke);
-                    return;
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
-                serverError(ctx, httpRequest);
-                return;
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
             Object invoke = method.invoke(target, params);
+            if (interceptors != null && interceptors.size() != 0) {
+                for (Interceptor interceptor : interceptors) {
+                    interceptor.postHandle(request, response);
+                }
+            }
 
             if (route.isJson()) {
-                ctx.channel().pipeline().addLast(new JsonObjectDecoder());
-                toClient(ctx, httpRequest, invoke);
+                ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke);
             } else {
-                //将数据用html格式返回
-                toClient(ctx, httpRequest, request);
+
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-            serverError(ctx, httpRequest);
+            ((SimpleHttpResponse) response).serverError(ctx, httpRequest);
         }
     }
 
-    private void response(ChannelHandlerContext ctx, HttpRequest request, FullHttpResponse response, ByteBuf byteBuf) {
-        boolean close = request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE, true)
-                || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
-                && !request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE, true);
-
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, JSON);
-        if (!close) {
-            response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
-        }
-        Set<Cookie> cookies;
-        String value = request.headers().get(HttpHeaderNames.COOKIE);
-        if (value == null) {
-            cookies = Collections.emptySet();
+    private Object parseParam(Class<?> aClass, Object object, SimpleHttpRequest request, Response response) {
+        Object param = null;
+        if (aClass.isAssignableFrom(Integer.class)) {
+            param = Integer.parseInt((String) object);
+        } else if (aClass.isAssignableFrom(Byte.class)) {
+            param = Byte.parseByte((String) object);
+        } else if (aClass.isAssignableFrom(Short.class)) {
+            param = Short.parseShort((String) object);
+        } else if (aClass.isAssignableFrom(Float.class)) {
+            param = Float.parseFloat((String) object);
+        } else if (aClass.isAssignableFrom(Double.class)) {
+            param = Double.parseDouble((String) object);
+        } else if (aClass.isAssignableFrom(Long.class)) {
+            param = Long.parseLong((String) object);
+        } else if (aClass.isAssignableFrom(String.class)) {
+            param = aClass.cast(object);
+        } else if (aClass.isAssignableFrom(SimpleHttpRequest.class)) {
+            param = request;
+        } else if (aClass.isAssignableFrom(Response.class)) {
+            param = response;
         } else {
-            cookies = ServerCookieDecoder.STRICT.decode(value);
-        }
-        if (!cookies.isEmpty()) {
-            for (Cookie cookie : cookies) {
-                response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+            try {
+                param = aClass.newInstance();
+                Map<String, Object> params = request.getParams();
+                Field[] declaredFields = param.getClass().getDeclaredFields();
+                for (Field declaredField : declaredFields) {
+                    String name = declaredField.getName();
+                    if (params.get(name) != null) {
+                        declaredField.setAccessible(true);
+                        declaredField.set(param, priai(declaredField.getType(), params.get(name)));
+                    }
+                }
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
             }
         }
-        ChannelFuture future = ctx.channel().writeAndFlush(response);
-        if (close) {
-            future.addListener(ChannelFutureListener.CLOSE);
+        return param;
+    }
+
+
+    private Object priai(Class<?> aClass, Object object) {
+        Object param;
+        if (aClass.isAssignableFrom(Integer.class)) {
+            param = Integer.parseInt((String) object);
+        } else if (aClass.isAssignableFrom(Byte.class)) {
+            param = Byte.parseByte((String) object);
+        } else if (aClass.isAssignableFrom(Short.class)) {
+            param = Short.parseShort((String) object);
+        } else if (aClass.isAssignableFrom(Float.class)) {
+            param = Float.parseFloat((String) object);
+        } else if (aClass.isAssignableFrom(Double.class)) {
+            param = Double.parseDouble((String) object);
+        } else if (aClass.isAssignableFrom(Long.class)) {
+            param = Long.parseLong((String) object);
+        } else if (aClass.isAssignableFrom(String.class)) {
+            param = object;
+        } else {
+            return null;
         }
+        return param;
     }
 }

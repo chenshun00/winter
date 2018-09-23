@@ -16,7 +16,7 @@ import java.util.*;
  * @author luobo.cs@raycloud.com
  * @since 2018/9/22
  */
-class LocalVariableTableVisitor extends MethodVisitor {
+public class LocalVariableTableVisitor extends MethodVisitor {
 
     public static final String ARRAY_SUFFIX = "[]";
     /**
@@ -92,7 +92,7 @@ class LocalVariableTableVisitor extends MethodVisitor {
     }
 
     private final Class<?> clazz;
-    private final Map<Member, String[]> memberMap;
+    private final Map<Member, Map<String, String>> memberMap;
     private final String name;
     private final Type[] args;
     private final String[] parameterNames;
@@ -100,13 +100,16 @@ class LocalVariableTableVisitor extends MethodVisitor {
     private final int[] lvtSlotIndex;
     private boolean hasLvtInfo = false;
 
-    public LocalVariableTableVisitor(Class<?> clazz, Map<Member, String[]> map, String name, String desc, boolean isStatic) {
+    private final Map<String, String> mapping;
+
+    public LocalVariableTableVisitor(Class<?> clazz, Map<Member, Map<String, String>> map, String name, String desc, boolean isStatic) {
         super(Opcodes.ASM5);
         this.clazz = clazz;
         this.memberMap = map;
         this.name = name;
         this.args = Type.getArgumentTypes(desc);
         this.parameterNames = new String[this.args.length];
+        this.mapping = new LinkedHashMap<>(this.args.length);
         this.isStatic = isStatic;
         this.lvtSlotIndex = computeLvtSlotIndices(isStatic, this.args);
     }
@@ -220,6 +223,7 @@ class LocalVariableTableVisitor extends MethodVisitor {
         this.hasLvtInfo = true;
         for (int i = 0; i < this.lvtSlotIndex.length; i++) {
             if (this.lvtSlotIndex[i] == index) {
+                this.mapping.put(name, Type.getType(description).getClassName());
                 this.parameterNames[i] = name;
             }
         }
@@ -228,7 +232,7 @@ class LocalVariableTableVisitor extends MethodVisitor {
     @Override
     public void visitEnd() {
         if (this.hasLvtInfo || (this.isStatic && this.parameterNames.length == 0)) {
-            this.memberMap.put(resolveMember(), this.parameterNames);
+            this.memberMap.put(resolveMember(), this.mapping);
         }
     }
 

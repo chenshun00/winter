@@ -5,6 +5,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.reflect.Member;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,12 +19,14 @@ public class ParameterNameDiscoveringVisitor extends ClassVisitor {
 
     private final Class<?> clazz;
 
-    private final Map<Member, String[]> memberMap;
+    private final Map<Member, Map<String, String>> memberMap;
+    private final Map<Member, List<String>> params;
 
-    public ParameterNameDiscoveringVisitor(Class<?> clazz, Map<Member, String[]> memberMap) {
+    public ParameterNameDiscoveringVisitor(Class<?> clazz, Map<Member, Map<String, String>> memberMap) {
         super(Opcodes.ASM5);
         this.clazz = clazz;
         this.memberMap = memberMap;
+        this.params = new HashMap<>();
     }
 
     private static boolean isSyntheticOrBridged(int access) {
@@ -36,7 +40,8 @@ public class ParameterNameDiscoveringVisitor extends ClassVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         if (!isSyntheticOrBridged(access) && !STATIC_CLASS_INIT.equals(name)) {
-            return new LocalVariableTableVisitor(this.clazz, this.memberMap, name, desc, isStatic(access));
+            return new LocalVariableTableVisitor(this.clazz, this.memberMap == null ?
+                    new HashMap<>() : this.memberMap, name, desc, isStatic(access));
         }
         return null;
     }

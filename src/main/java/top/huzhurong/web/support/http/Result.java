@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-class Result<R> {
+public class Result<R> {
     private R data;
     private Integer code;
     private String reason;

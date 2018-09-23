@@ -3,11 +3,13 @@ package top.huzhurong.web.support.route;
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.RequestMapping;
+import top.huzhurong.web.asm.AsmParameterNameDiscover;
+import top.huzhurong.web.asm.ParameterNameDiscoverer;
 import top.huzhurong.web.support.http.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,24 @@ import java.util.Map;
  */
 public class HttpRouteBuilder {
 
+    private static final Map<String, Class<?>> primitiveWrapperTypeMap = new IdentityHashMap<>(8);
+
+    static {
+        primitiveWrapperTypeMap.put("boolean", Boolean.class);
+        primitiveWrapperTypeMap.put("int", Integer.class);
+        primitiveWrapperTypeMap.put("char", Character.class);
+        primitiveWrapperTypeMap.put("double", Double.class);
+        primitiveWrapperTypeMap.put("float", Float.class);
+        primitiveWrapperTypeMap.put("byte", Byte.class);
+        primitiveWrapperTypeMap.put("long", Long.class);
+        primitiveWrapperTypeMap.put("short", Short.class);
+    }
+
+    private ParameterNameDiscoverer parameterNameDiscoverer = new AsmParameterNameDiscover();
+
+    /**
+     * 基本类型靠parse，自定义类型，就只能反射set了
+     */
     public List<Route> buildRoute(Object instance) {
         List<Route> routeList = new LinkedList<>();
         RequestMapping requestMapping = instance.getClass().getDeclaredAnnotation(RequestMapping.class);
@@ -61,11 +81,17 @@ public class HttpRouteBuilder {
                     for (String tag : tags) {
                         Route route = new Route();
                         Map<String, Class<?>> routeParameters = route.getParameters();
-                        Parameter[] parameters = declaredMethod.getParameters();
-                        for (Parameter parameter : parameters) {
-                            String name = parameter.getName();
-                            Class<?> type = parameter.getType();
-                            routeParameters.put(name, type);
+                        Map<String, String> parameterNames = parameterNameDiscoverer.getParameterNames(declaredMethod);
+                        for (Map.Entry<String, String> entry : parameterNames.entrySet()) {
+                            Class<?> aClass;
+                            if ((aClass = primitiveWrapperTypeMap.get(entry.getKey())) == null) {
+                                try {
+                                    aClass = Class.forName(entry.getValue());
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            routeParameters.put(entry.getKey(), aClass);
                         }
 
                         route.setJson(json != null);

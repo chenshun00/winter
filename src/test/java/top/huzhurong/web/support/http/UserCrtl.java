@@ -16,7 +16,7 @@ public class UserCrtl {
     @Json
     @RequestMapping("add")
     public Object add(User user) {
-        System.out.println(user);
+        System.out.println("user----:" + user);
         return user;
     }
 
@@ -34,8 +34,10 @@ public class UserCrtl {
 
     @Json
     @RequestMapping(value = "query", method = RequestMethod.GET)
-    public Object query(String name, Integer age) {
+    public Object query(String name, Integer age, String hello, String world) {
         System.out.println("age:" + age);
+        System.out.println("world:" + world);
+        System.out.println("hello:" + hello);
         return "query" + name;
     }
 

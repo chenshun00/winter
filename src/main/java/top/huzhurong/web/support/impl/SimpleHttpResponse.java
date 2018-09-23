@@ -1,16 +1,22 @@
 package top.huzhurong.web.support.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import lombok.Builder;
 import lombok.Getter;
 import top.huzhurong.web.support.http.HttpCookie;
 import top.huzhurong.web.support.http.HttpHeader;
+import top.huzhurong.web.support.http.Result;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -19,6 +25,10 @@ import java.util.Map;
 @Getter
 @Builder
 public class SimpleHttpResponse implements Response {
+
+    private final static String JSON = "application/json;charset=utf-8";
+    private final static String XML = "application/xml;charset=utf-8";
+    private final static String HTML = "text/html; charset=utf-8";
 
     private List<HttpCookie> httpCookies;
     private Map<String, Object> httpHeaders;
@@ -97,38 +107,62 @@ public class SimpleHttpResponse implements Response {
         return (String) this.httpHeaders.get(name);
     }
 
-    private void buildResponse() {
-//        String connection = (String) this.httpHeaders.get(HttpHeaderNames.CONNECTION.toString());
-//        keep-alive
-//        boolean close = true;
-//        if (connection != null && connection.equalsIgnoreCase(HttpHeaderValues.KEEP_ALIVE.toString())) {
-//            close = false;
-//        }
-//        if (this.simpleHttpRequest.getProtocal().equalsIgnoreCase(HttpVersion.HTTP_1_0.toString())) {
-//            close = true;
-//        }
-//        response.headers().set(HttpHeaderNames.CONTENT_TYPE, JSON);
-//        if (!close) {
-//            content-length
-//            response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
-//        }
-//        set cookie
-//        Set<Cookie> cookies;
-//        String value = request.headers().get(HttpHeaderNames.COOKIE);
-//        if (value == null) {
-//            cookies = Collections.emptySet();
-//        } else {
-//            cookies = ServerCookieDecoder.STRICT.decode(value);
-//        }
-//        if (!cookies.isEmpty()) {
-//            for (Cookie cookie : cookies) {
-//                response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
-//            }
-//        }
-//        ChannelFuture future = ctx.channel().writeAndFlush(response);
-//        if (close) {
-//            future.addListener(ChannelFutureListener.CLOSE);
-//        }
+    public void toClient(ChannelHandlerContext ctx, HttpRequest request, Object object) {
+        String json = JSONObject.toJSONString(Result.ofSuccess(object));
+        ByteBuf byteBuf = Unpooled.copiedBuffer(json.getBytes(StandardCharsets.UTF_8));
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
+        response(ctx, request, response, byteBuf);
+    }
+
+    public void serverError(ChannelHandlerContext ctx, HttpRequest request) {
+        Result failed = Result.offail("Internal Server Error");
+        String string = JSONObject.toJSONString(failed);
+        ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR, byteBuf);
+        response(ctx, request, response, byteBuf);
+    }
+
+    public void methodError(ChannelHandlerContext ctx, HttpRequest request) {
+        Result failed = Result.offail("Http Request Method Not Acceptable");
+        String string = JSONObject.toJSONString(failed);
+        ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_ACCEPTABLE, byteBuf);
+        response(ctx, request, response, byteBuf);
+    }
+
+    public void notFound(ChannelHandlerContext ctx, HttpRequest request) {
+        Result failed = Result.offail("Mapping Failed,Not Found");
+        String string = JSONObject.toJSONString(failed);
+        ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf);
+        response(ctx, request, response, byteBuf);
+    }
+
+    private void response(ChannelHandlerContext ctx, HttpRequest request, FullHttpResponse response, ByteBuf byteBuf) {
+        boolean close = request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE, true)
+                || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
+                && !request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE, true);
+
+        response.headers().set(HttpHeaderNames.CONTENT_TYPE, JSON);
+        if (!close) {
+            response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
+        }
+        Set<io.netty.handler.codec.http.cookie.Cookie> cookies;
+        String value = request.headers().get(HttpHeaderNames.COOKIE);
+        if (value == null) {
+            cookies = Collections.emptySet();
+        } else {
+            cookies = ServerCookieDecoder.STRICT.decode(value);
+        }
+        if (!cookies.isEmpty()) {
+            for (io.netty.handler.codec.http.cookie.Cookie cookie : cookies) {
+                response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+            }
+        }
+        ChannelFuture future = ctx.channel().writeAndFlush(response);
+        if (close) {
+            future.addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
 }

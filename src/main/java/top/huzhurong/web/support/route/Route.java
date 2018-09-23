@@ -6,7 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -22,7 +22,7 @@ public class Route {
     private Class<?> targetClass;
     private Object target;
     private Method method;
-    private Map<String, Class<?>> parameters = new HashMap<>(8);
+    private Map<String, Class<?>> parameters = new LinkedHashMap<>(8);
     private boolean json;
     private String mapping;
 
