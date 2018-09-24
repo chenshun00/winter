@@ -43,7 +43,7 @@ public class NettyServer implements Server, EnvironmentAware, IocContainerAware,
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup);
         b.channel(NioServerSocketChannel.class);
-        b.childHandler(new HttpServerInitializer(null, this.httpServerHandler));
+        b.childHandler(new HttpServerInitializer(null, this.httpServerHandler, this.environment));
         try {
             Channel ch = b.bind(POST).sync().channel();
             System.err.println("Open your web browser and navigate to http://127.0.0.1:" + POST + '/');

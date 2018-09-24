@@ -37,6 +37,7 @@ public class UserCrtl {
     public Object query(String name, Integer age, String hello, String world) {
         System.out.println("age:" + age);
         System.out.println("world:" + world);
+        int i = 100 / 0;
         System.out.println("hello:" + hello);
         return "query" + name;
     }

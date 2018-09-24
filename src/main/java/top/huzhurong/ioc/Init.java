@@ -20,6 +20,8 @@ import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
 import top.huzhurong.ioc.scan.BeanScanner;
 import top.huzhurong.web.annotation.Controller;
+import top.huzhurong.web.annotation.ControllerAdvice;
+import top.huzhurong.web.annotation.Filter;
 import top.huzhurong.web.netty.HttpServerHandler;
 import top.huzhurong.web.netty.NettyServer;
 import top.huzhurong.web.support.http.HttpTradingCenter;
@@ -280,7 +282,8 @@ public class Init {
 
     private boolean find(ClassInfo classInfo) {
         Class<?> aClass = classInfo.getaClass();
-        return findAnnotation(aClass, Bean.class, Controller.class, Aspectj.class, Configuration.class);
+        return findAnnotation(aClass, Bean.class, Controller.class, Aspectj.class,
+                Configuration.class, Filter.class, ControllerAdvice.class);
     }
 
     @SafeVarargs

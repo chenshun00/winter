@@ -4,7 +4,11 @@ import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.NameGenerator;
+import top.huzhurong.web.annotation.ControllerAdvice;
+import top.huzhurong.web.annotation.Exceptional;
+import top.huzhurong.web.support.http.ControllerBean;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -106,10 +110,24 @@ public class DefaultIocContainer implements IocContainer {
         try {
             Object instance = info.getaClass().newInstance();
             this.put(info.getClassName(), instance);
-            if (info.getaClass().getAnnotation(Aspectj.class) != null) {
+            if (info.getaClass().isAnnotationPresent(Aspectj.class)) {
                 List<Advisor> advisorList = AspectjParser.parserAspectj(info.getaClass(), instance);
                 for (Advisor advisor : advisorList) {
                     this.put(NameGenerator.generator(advisor), advisor);
+                }
+            }
+            if (info.getaClass().isAnnotationPresent(ControllerAdvice.class)) {
+                this.put("controllerAdvice", instance);
+                ControllerBean controllerBean = new ControllerBean();
+                this.put("controllerBean", controllerBean);
+                Method[] declaredMethods = info.getaClass().getDeclaredMethods();
+                for (Method declaredMethod : declaredMethods) {
+                    if (declaredMethod.isAnnotationPresent(Exceptional.class)) {
+                        Exceptional exceptional = declaredMethod.getAnnotation(Exceptional.class);
+                        for (Class<? extends Throwable> aClass : exceptional.value()) {
+                            controllerBean.addExceptionHandle(aClass, declaredMethod);
+                        }
+                    }
                 }
             }
         } catch (InstantiationException | IllegalAccessException e) {

@@ -7,7 +7,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,7 @@ import top.huzhurong.web.support.http.Result;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -32,15 +34,19 @@ public class SimpleHttpResponse implements Response {
 
     private List<HttpCookie> httpCookies;
     private Map<String, Object> httpHeaders;
-    private Integer statusCode = 200;
+    private Map<String, Object> other;
+    private Integer statusCode;
     private SimpleHttpRequest simpleHttpRequest;
     private ChannelHandlerContext ctx;
+    private HttpRequest httpRequest;
 
-    public static Response buildResponse(ChannelHandlerContext ctx, SimpleHttpRequest simpleHttpRequest) {
+    public static Response buildResponse(ChannelHandlerContext ctx, SimpleHttpRequest simpleHttpRequest, HttpRequest httpRequest) {
         return SimpleHttpResponse.builder().ctx(ctx)
                 .httpCookies(simpleHttpRequest.getHttpCookies())
                 .httpHeaders(parseHeader(simpleHttpRequest))
                 .simpleHttpRequest(simpleHttpRequest)
+                .other(new HashMap<>())
+                .httpRequest(httpRequest)
                 .build();
     }
 
@@ -61,18 +67,24 @@ public class SimpleHttpResponse implements Response {
 
     @Override
     public boolean containsHeader(String name) {
-        return this.httpHeaders.get(name) != null;
+        if (this.httpHeaders.get(name) != null) {
+            return this.httpHeaders.get(name) != null;
+        } else if (this.other.get(name) != null) {
+            return this.other.get(name) != null;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public void sendError(HttpResponseStatus responseStatus, String msg) {
+    public void sendError(HttpResponseStatus responseStatus, Object msg) {
         setStatus(responseStatus.code());
+        serverError(this.ctx, this.httpRequest, msg, responseStatus);
     }
 
     @Override
     public void sendError(HttpResponseStatus responseStatus) {
         setStatus(responseStatus.code());
-
     }
 
     @Override
@@ -84,12 +96,18 @@ public class SimpleHttpResponse implements Response {
     public void addDateHeader(String name, long date) {
         this.httpHeaders.remove(name);
         this.httpHeaders.put(name, date);
+
+        this.other.remove(name);
+        this.other.put(name, date);
     }
 
     @Override
     public void addHeader(String name, String value) {
         this.httpHeaders.remove(name);
         this.httpHeaders.put(name, value);
+
+        this.other.remove(name);
+        this.other.put(name, value);
     }
 
     @Override
@@ -99,12 +117,20 @@ public class SimpleHttpResponse implements Response {
 
     @Override
     public Collection<String> getHeaderNames() {
-        return this.httpHeaders.keySet();
+        Set<String> set = this.httpHeaders.keySet();
+        set.addAll(this.other.keySet());
+        return set;
     }
 
     @Override
     public String getHeader(String name) {
-        return (String) this.httpHeaders.get(name);
+        if (this.httpHeaders.get(name) != null) {
+            return (String) this.httpHeaders.get(name);
+        } else if (this.other.get(name) != null) {
+            return (String) this.other.get(name);
+        } else {
+            return "";
+        }
     }
 
     public void toClient(ChannelHandlerContext ctx, HttpRequest request, Object object) {
@@ -114,11 +140,10 @@ public class SimpleHttpResponse implements Response {
         response(ctx, request, response, byteBuf);
     }
 
-    public void serverError(ChannelHandlerContext ctx, HttpRequest request) {
-        Result failed = Result.offail("Internal Server Error");
-        String string = JSONObject.toJSONString(failed);
+    public void serverError(ChannelHandlerContext ctx, HttpRequest request, Object object, HttpResponseStatus responseStatus) {
+        String string = JSONObject.toJSONString(object);
         ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
-        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR, byteBuf);
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus, byteBuf);
         response(ctx, request, response, byteBuf);
     }
 
@@ -139,6 +164,7 @@ public class SimpleHttpResponse implements Response {
     }
 
     private void response(ChannelHandlerContext ctx, HttpRequest request, FullHttpResponse response, ByteBuf byteBuf) {
+
         boolean close = request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE, true)
                 || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
                 && !request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE, true);
@@ -147,13 +173,23 @@ public class SimpleHttpResponse implements Response {
         if (!close) {
             response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
         }
-        Set<io.netty.handler.codec.http.cookie.Cookie> cookies;
-        String value = request.headers().get(HttpHeaderNames.COOKIE);
-        if (value == null) {
-            cookies = Collections.emptySet();
-        } else {
-            cookies = ServerCookieDecoder.STRICT.decode(value);
+        defaultHeader(response);
+        //默认响应请求头
+        for (Map.Entry<String, Object> entry : this.other.entrySet()) {
+            response.headers().add(entry.getKey(), entry.getValue());
         }
+        //添加的cookie加上
+        Set<io.netty.handler.codec.http.cookie.Cookie> cookies = httpCookies.stream().map(httpCookie -> {
+            Cookie cookie = new DefaultCookie(httpCookie.getName(), httpCookie.getValue());
+            cookie.setDomain(httpCookie.getDomain());
+            cookie.setHttpOnly(httpCookie.isHttpOnly());
+            cookie.setMaxAge(httpCookie.getMaxAge());
+            cookie.setPath(httpCookie.getPath());
+            cookie.setSecure(httpCookie.isSecure());
+            return cookie;
+        }).collect(Collectors.toSet());
+
+        //cookie转换成netty的cookie，写入
         if (!cookies.isEmpty()) {
             for (io.netty.handler.codec.http.cookie.Cookie cookie : cookies) {
                 response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
@@ -165,4 +201,7 @@ public class SimpleHttpResponse implements Response {
         }
     }
 
+    private void defaultHeader(FullHttpResponse response) {
+        response.headers().add("server", "winter");
+    }
 }

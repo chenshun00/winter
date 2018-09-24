@@ -17,6 +17,7 @@ import top.huzhurong.web.support.route.Route;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -32,12 +33,15 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
 
     private List<Interceptor> interceptors;
     private HttpParameterParser httpParameterParser = new HttpParameterParser();
+    private ControllerBean controllerBean;
 
     @Override
     public void setIocContainer(IocContainer iocContainer) {
         this.iocContainer = iocContainer;
         this.httpMatcher = this.iocContainer.getBean(HttpMatcher.class);
         this.interceptors = this.iocContainer.getBeanInstancesForType(Interceptor.class);
+
+        this.controllerBean = this.iocContainer.getBean(ControllerBean.class);
     }
 
     @Override
@@ -52,9 +56,9 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
      *
      * @param httpRequest http 请求
      */
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
+    public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) throws InvocationTargetException, IllegalAccessException {
         SimpleHttpRequest request = SimpleHttpRequest.buildRequest(ctx, httpRequest);
-        Response response = SimpleHttpResponse.buildResponse(ctx, request);
+        Response response = SimpleHttpResponse.buildResponse(ctx, request, httpRequest);
 
         Route route = httpMatcher.match(request);
         if (route == null) {
@@ -98,14 +102,10 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         Map<String, Class<?>> routeParameters = route.getParameters();
         Object[] params = new Object[routeParameters.size()];
         Map<String, Object> parameters = request.getParams();
-        try {
-            int i = 0;
-            for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
-                Class<?> aClass = routeParameters.get(entry.getKey());
-                params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        int i = 0;
+        for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
+            Class<?> aClass = routeParameters.get(entry.getKey());
+            params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
         }
 
         try {
@@ -118,12 +118,20 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
 
             if (route.isJson()) {
                 ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke);
-            } else {
-
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            ((SimpleHttpResponse) response).serverError(ctx, httpRequest);
+        } catch (IllegalAccessException ex) {
+            response.sendError(HttpResponseStatus.OK, ex.getMessage());
+        } catch (InvocationTargetException ex) {
+            Throwable targetException = ex.getTargetException();
+            if (this.controllerBean != null) {
+                Method exceptionHandle = this.controllerBean.getExceptionHandle(targetException.getClass());
+                if (exceptionHandle != null) {
+                    Object invoke = exceptionHandle.invoke(this.iocContainer.getBean("controllerAdvice"), targetException);
+                    response.sendError(HttpResponseStatus.OK, invoke);
+                }
+            } else {
+                response.sendError(HttpResponseStatus.OK, targetException.getMessage());
+            }
         }
     }
 
@@ -147,22 +155,25 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
             param = request;
         } else if (aClass.isAssignableFrom(Response.class)) {
             param = response;
-        } else {
-            try {
-                param = aClass.newInstance();
-                Map<String, Object> params = request.getParams();
-                Field[] declaredFields = param.getClass().getDeclaredFields();
-                for (Field declaredField : declaredFields) {
-                    String name = declaredField.getName();
-                    if (params.get(name) != null) {
-                        declaredField.setAccessible(true);
-                        declaredField.set(param, priai(declaredField.getType(), params.get(name)));
+        } else //Date date = (Date) aClass.newInstance();
+            if (aClass.isAssignableFrom(Date.class)) {
+                param = object;
+            } else {
+                try {
+                    param = aClass.newInstance();
+                    Map<String, Object> params = request.getParams();
+                    Field[] declaredFields = param.getClass().getDeclaredFields();
+                    for (Field declaredField : declaredFields) {
+                        String name = declaredField.getName();
+                        if (params.get(name) != null) {
+                            declaredField.setAccessible(true);
+                            declaredField.set(param, priai(declaredField.getType(), params.get(name)));
+                        }
                     }
+                } catch (InstantiationException | IllegalAccessException e) {
+                    e.printStackTrace();
                 }
-            } catch (InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
             }
-        }
         return param;
     }
 

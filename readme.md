@@ -118,8 +118,6 @@ Caused by: java.lang.ClassNotFoundException: xxx.xxx.xxx.xxx
 6、beanPostProcessor init后置处理 BeanPostProcessorsAfterInitialization,bean对象可能在这里包装成代理
 
 
->ps:实力不够，所以在Spring上进行一次变种，极大的简化了这一层面的操作
-
 ### 问题
   
 1、使用 `cglib` 和 `jdk proxy` 的时候，两者的实现动态代理的原理是不一致的，`cglib` 使用继承父类的的形式展开，这样我们就可以通过向上

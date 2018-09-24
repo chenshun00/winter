@@ -15,7 +15,7 @@ public interface Response {
 
     boolean containsHeader(String name);
 
-    void sendError(HttpResponseStatus responseStatus, String msg);
+    void sendError(HttpResponseStatus responseStatus, Object msg);
 
     void sendError(HttpResponseStatus responseStatus);
 

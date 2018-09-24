@@ -1,12 +1,15 @@
 package top.huzhurong.web.asm;
 
-import com.alibaba.fastjson.JSONObject;
 import org.junit.Test;
 import top.huzhurong.ioc.transaction.User;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -26,9 +29,12 @@ public class AsmParameterNameDiscoverTest {
             if (declaredMethod.getName().equalsIgnoreCase("hello")) {
                 Map<String, String> parameterNames = parameterNameDiscoverer.getParameterNames(declaredMethod);
                 assertEquals(5, parameterNames.size());
-                System.out.println(JSONObject.toJSONString(parameterNames));
-                System.out.println(parameterNames.getClass());
-//                assertEquals("[hello, age, localDateTime, file, user]", Arrays.asList(parameterNames).toString());
+                assertEquals("[{hello=java.lang.String, " +
+                                "age=short, " +
+                                "localDateTime=java.time.LocalDateTime, " +
+                                "file=java.io.File, " +
+                                "user=top.huzhurong.ioc.transaction.User}]",
+                        Collections.singletonList(parameterNames).toString());
             }
         }
     }
@@ -60,6 +66,14 @@ public class AsmParameterNameDiscoverTest {
     public void tes() throws Exception {
         Class<?> aClass = Class.forName("java/lang/String".replace("/", "."));
         assertFalse(aClass.isPrimitive());
+
+        Class<?> aClass1 = Class.forName("java.util.Date");
+        Date date = (Date) aClass1.newInstance();
+        date.setTime(1537789545549L);
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        assertEquals("2018-09-24", dateFormat.format(date));
+
     }
 
 }

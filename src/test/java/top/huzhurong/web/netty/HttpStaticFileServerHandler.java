@@ -53,8 +53,6 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
             return;
         }
 
-        boolean readingChunks = HttpUtil.isTransferEncodingChunked(request);
-
         if (decoder != null) {
             // New chunk is received
             try {
@@ -67,7 +65,6 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
 
             readHttpDataChunkByChunk(ctx);
             // example of reading only if at the end
-            readingChunks = false;
             reset(request);
         } else {
             sendError(ctx, HttpResponseStatus.BAD_REQUEST, "Failed to decode file data");

@@ -16,9 +16,9 @@ public class HttpCookie {
     private String name;
     private String value;
 
-    private String path;
+    private String path = "/";
     private String domain;
-    private boolean httpOnly;
+    private boolean httpOnly = false;
     private long maxAge = Long.MIN_VALUE;
-    private boolean secure;
+    private boolean secure = false;
 }
