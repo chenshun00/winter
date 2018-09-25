@@ -9,6 +9,8 @@ import org.junit.Test;
 import top.huzhurong.ioc.transaction.User;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertFalse;
 
@@ -29,7 +31,17 @@ public class JsonUtilTest {
         System.out.println(res.toString(CharsetUtil.UTF_8));
         res.release();
         assertFalse(embeddedChannel.finish());
+    }
 
+    private static final Pattern PATTERN = Pattern.compile("\\{.*?}");
+
+    @Test
+    public void testPattern() {
+        Matcher matcher = PATTERN.matcher("{hello}/{world}");
+        while (matcher.find()) {
+            String group = matcher.group();
+            System.out.println(group);
+        }
     }
 
 

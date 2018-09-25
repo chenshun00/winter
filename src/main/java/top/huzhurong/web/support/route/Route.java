@@ -25,5 +25,5 @@ public class Route {
     private Map<String, Class<?>> parameters = new LinkedHashMap<>(8);
     private boolean json;
     private String mapping;
-
+//    private List<HttpParam> httpParamList = new LinkedList<>();
 }

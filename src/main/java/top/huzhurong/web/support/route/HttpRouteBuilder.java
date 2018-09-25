@@ -2,13 +2,16 @@ package top.huzhurong.web.support.route;
 
 import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.web.annotation.Json;
+import top.huzhurong.web.annotation.PathVariable;
 import top.huzhurong.web.annotation.RequestMapping;
+import top.huzhurong.web.annotation.RequestParam;
 import top.huzhurong.web.asm.AsmParameterNameDiscover;
 import top.huzhurong.web.asm.ParameterNameDiscoverer;
 import top.huzhurong.web.support.http.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +67,11 @@ public class HttpRouteBuilder {
                     if (!child.startsWith("/")) {
                         child = "/" + child;
                     }
+
+//                    if (child.matches("")){
+//
+//                    }
+
                     String key = parent + child;
                     if (requestMethods.length == 0) {
                         tags.add((key + "#" + "post").toUpperCase());
@@ -78,20 +86,32 @@ public class HttpRouteBuilder {
                         }
                     }
 
+                    Parameter[] parameters = declaredMethod.getParameters();
                     for (String tag : tags) {
                         Route route = new Route();
                         Map<String, Class<?>> routeParameters = route.getParameters();
                         Map<String, String> parameterNames = parameterNameDiscoverer.getParameterNames(declaredMethod);
+                        int i = 0;
                         for (Map.Entry<String, String> entry : parameterNames.entrySet()) {
-                            Class<?> aClass;
-                            if ((aClass = primitiveWrapperTypeMap.get(entry.getKey())) == null) {
+                            if (primitiveWrapperTypeMap.get(entry.getKey()) == null) {
                                 try {
-                                    aClass = Class.forName(entry.getValue());
+                                    String nname;
+                                    Class<?> aClass = Class.forName(entry.getValue());
+                                    if (parameters[i].isAnnotationPresent(RequestParam.class)) {
+                                        RequestParam requestParam = parameters[i].getAnnotation(RequestParam.class);
+                                        nname = requestParam.value();
+                                    } else if (parameters[i].isAnnotationPresent(PathVariable.class)) {
+                                        PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
+                                        nname = pathVariable.value();
+                                    } else {
+                                        nname = entry.getKey();
+                                    }
+                                    i++;
+                                    routeParameters.put(nname, aClass);
                                 } catch (ClassNotFoundException e) {
                                     e.printStackTrace();
                                 }
                             }
-                            routeParameters.put(entry.getKey(), aClass);
                         }
 
                         route.setJson(json != null);
