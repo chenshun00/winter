@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>top.huzhurong.proxy</groupId>
-    <artifactId>aop-proxy</artifactId>
+    <artifactId>winter</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
