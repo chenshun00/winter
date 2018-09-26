@@ -14,16 +14,16 @@ import java.sql.SQLException;
  */
 public class ConfigTest {
 
-    private Init init;
+    private Winter winter;
 
     @Before
     public void before() {
-        init = new Init(ConfigTest.class);
+        winter = new Winter(ConfigTest.class);
     }
 
     @Test
     public void testConfigurationAnnotation() throws SQLException {
-        IocContainer iocContainer = init.getIocContainer();
+        IocContainer iocContainer = winter.getIocContainer();
         Hello bean = iocContainer.getBean(Hello.class);
         System.out.println(bean.hi());
         DataSource dataSource = iocContainer.getBean(DataSource.class);

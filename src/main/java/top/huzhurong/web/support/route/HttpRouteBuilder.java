@@ -16,7 +16,6 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -73,14 +72,14 @@ public class HttpRouteBuilder {
 
                     String key = parent + child;
                     if (requestMethods.length == 0) {
-                        tags.add((key + "#" + "post").toUpperCase());
-                        tags.add((key + "#" + "get").toUpperCase());
-                        tags.add((key + "#" + "put").toUpperCase());
-                        tags.add((key + "#" + "delete").toUpperCase());
+                        tags.add((key + "#" + "post".toUpperCase()));
+                        tags.add((key + "#" + "get".toUpperCase()));
+                        tags.add((key + "#" + "put".toUpperCase()));
+                        tags.add((key + "#" + "delete".toUpperCase()));
                     } else {
                         for (RequestMethod requestMethod : requestMethods) {
                             String name = requestMethod.name();
-                            String tag = (key + "#" + name).toUpperCase();
+                            String tag = (key + "#" + name.toUpperCase());
                             tags.add(tag);
                         }
                     }
@@ -102,8 +101,6 @@ public class HttpRouteBuilder {
                                     } else if (parameters[i].isAnnotationPresent(PathVariable.class)) {
                                         PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
                                         nname = pathVariable.value();
-                                        Matcher matcher = PATTERN.matcher(tag);
-                                        tag = matcher.replaceAll("*");
                                     } else {
                                         nname = entry.getKey();
                                     }

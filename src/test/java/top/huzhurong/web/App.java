@@ -2,7 +2,7 @@ package top.huzhurong.web;
 
 import org.junit.Before;
 import org.junit.Test;
-import top.huzhurong.ioc.Init;
+import top.huzhurong.ioc.Winter;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
 
 /**
@@ -12,16 +12,16 @@ import top.huzhurong.ioc.annotation.EnableConfiguration;
 @EnableConfiguration
 public class App {
 
-    private Init init;
+    private Winter winter;
 
     @Before
     public void before() {
-        init = new Init(App.class);
+        winter = new Winter(App.class);
     }
 
     @Test
     public void testFirst() {
-        init.instantiation();
+        winter.start();
     }
 
 }

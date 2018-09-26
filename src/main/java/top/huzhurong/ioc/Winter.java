@@ -43,7 +43,7 @@ import java.util.stream.Stream;
  * @since 2018/9/8
  */
 @Slf4j
-public class Init {
+public class Winter {
     @Setter
     private Class<?> bootClass;
     @Getter
@@ -53,12 +53,11 @@ public class Init {
 
     private AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
-    public Init() {
+    public Winter() {
     }
 
-    public Init(@NonNull Class<?> bootClass) {
+    public Winter(@NonNull Class<?> bootClass) {
         this.bootClass = bootClass;
-        instantiation();
     }
 
     public Set<ClassInfo> scan(@NonNull String... basePackages) {
@@ -83,7 +82,7 @@ public class Init {
         AopConfigUtil.handleConfig(info, this.bootClass);
     }
 
-    public void instantiation() {
+    public void start() {
         if (atomicBoolean.get()) {
             throw new IllegalStateException("Repeat registration exception");
         }

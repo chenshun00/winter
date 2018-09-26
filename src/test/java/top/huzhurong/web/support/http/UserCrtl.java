@@ -1,18 +1,21 @@
 package top.huzhurong.web.support.http;
 
-import top.huzhurong.web.annotation.Controller;
-import top.huzhurong.web.annotation.Json;
-import top.huzhurong.web.annotation.RequestMapping;
-import top.huzhurong.web.annotation.RequestParam;
+import top.huzhurong.web.annotation.*;
 
 /**
  * @author luobo.cs@raycloud.com
  * @since 2018/9/20
  */
-@RequestMapping("info")
+@RequestMapping("t")
 @Controller
 public class UserCrtl {
 
+    @Json
+    @RequestMapping(value = "{name}/{info}/{age}/q.json")
+    public Object test(@PathVariable("name") String name, @PathVariable("info") String info,
+                       @PathVariable("age") Integer age, @RequestParam("chen") String ccc) {
+        return name + "--" + info + "--" + age + "--ccc:--" + ccc;
+    }
 
     @Json
     @RequestMapping("add")

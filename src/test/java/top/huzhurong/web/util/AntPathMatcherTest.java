@@ -29,7 +29,7 @@ public class AntPathMatcherTest {
 
     @Test
     public void match() {
-        boolean match = pathMatcher.match(pattern, info);
+        boolean match = pathMatcher.match(info, info2);
         assertTrue(match);
     }
 

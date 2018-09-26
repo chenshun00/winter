@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import top.huzhurong.web.support.impl.SimpleHttpRequest;
+import top.huzhurong.web.util.AntPathMatcher;
+import top.huzhurong.web.util.PathMatcher;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +16,8 @@ import java.util.Map;
  * @since 2018/9/20
  */
 public class HttpMatcher {
+
+    private PathMatcher pathMatcher = new AntPathMatcher();
 
     @Getter
     @Setter
@@ -33,14 +37,18 @@ public class HttpMatcher {
         //精准匹配 path=/user/chenshun00/22 ---> /user/{name}/{age}
         String path = httpRequest.getPath();
         String method = httpRequest.getMethod();
-        String key = (path + "#" + method).toUpperCase();
+        String key = (path + "#" + method);
         Route route = routeMap.get(key);
 
         //@PathVariable注解匹配
         if (route == null) {
-
+            for (Map.Entry<String, Route> entry : routeMap.entrySet()) {
+                String kk = entry.getKey();
+                if (pathMatcher.match(kk, key)) {
+                    return entry.getValue();
+                }
+            }
         }
-
         return route;
     }
 

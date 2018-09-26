@@ -21,7 +21,7 @@ public class InitTest {
     public static final String user = "root";
     public static final String password = "chenshun";
 
-    protected Init init = new Init();
+    protected Winter winter = new Winter();
     protected BeanFactory beanFactory;
 
     @Before
@@ -31,7 +31,7 @@ public class InitTest {
 
     @Test
     public void scan() {
-        Set<ClassInfo> classInfoSet = init.scan("top.huzhurong.ioc.scan.test");
+        Set<ClassInfo> classInfoSet = winter.scan("top.huzhurong.ioc.scan.test");
         classInfoSet.forEach(set -> {
             System.out.println(set.getaClass());
             System.out.println(set.getClassName());

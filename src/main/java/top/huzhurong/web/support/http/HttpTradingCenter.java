@@ -13,11 +13,14 @@ import top.huzhurong.web.support.impl.SimpleHttpRequest;
 import top.huzhurong.web.support.impl.SimpleHttpResponse;
 import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.Route;
+import top.huzhurong.web.util.AntPathMatcher;
+import top.huzhurong.web.util.PathMatcher;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +35,7 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
     private HttpMatcher httpMatcher;
 
     private List<Interceptor> interceptors;
+    private PathMatcher pathMatcher = new AntPathMatcher();
     private HttpParameterParser httpParameterParser = new HttpParameterParser();
     private ControllerBean controllerBean;
 
@@ -84,6 +88,13 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
                 response.sendError(HttpResponseStatus.BAD_REQUEST, "不支持" + request.getMethod());
                 return;
             }
+        }
+        if (route.getMapping().contains("{") && route.getMapping().contains("}")) {
+            Map<String, String> map = pathMatcher.extractUriTemplateVariables(route.getMapping(), request.getPath() + "#" + httpRequest.method());
+            if (paramMap == null) {
+                paramMap = new LinkedHashMap<>();
+            }
+            paramMap.putAll(map);
         }
         request.setParams(paramMap);
 
