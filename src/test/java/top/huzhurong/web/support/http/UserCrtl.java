@@ -16,7 +16,7 @@ public class UserCrtl {
 
     @Json
     @RequestMapping("add")
-    public Object add(User user) {
+    public Object add(@RequestParam("gg") User user) {
         System.out.println("user----:" + user);
         return user;
     }

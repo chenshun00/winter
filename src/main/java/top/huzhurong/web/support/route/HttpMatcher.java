@@ -30,11 +30,18 @@ public class HttpMatcher {
     }
 
     public Route match(SimpleHttpRequest httpRequest) {
-
+        //精准匹配 path=/user/chenshun00/22 ---> /user/{name}/{age}
         String path = httpRequest.getPath();
         String method = httpRequest.getMethod();
         String key = (path + "#" + method).toUpperCase();
-        return routeMap.get(key);
+        Route route = routeMap.get(key);
+
+        //@PathVariable注解匹配
+        if (route == null) {
+
+        }
+
+        return route;
     }
 
     public Route blurryMatch(SimpleHttpRequest httpRequest) {

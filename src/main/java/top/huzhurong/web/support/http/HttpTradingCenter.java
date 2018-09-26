@@ -60,6 +60,7 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         SimpleHttpRequest request = SimpleHttpRequest.buildRequest(ctx, httpRequest);
         Response response = SimpleHttpResponse.buildResponse(ctx, request, httpRequest);
 
+        //精准匹配，url和route直接映射
         Route route = httpMatcher.match(request);
         if (route == null) {
             Route blurryMatch = httpMatcher.blurryMatch(request);

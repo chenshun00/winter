@@ -16,6 +16,8 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -24,6 +26,7 @@ import java.util.Map;
 public class HttpRouteBuilder {
 
     private static final Map<String, Class<?>> primitiveWrapperTypeMap = new IdentityHashMap<>(8);
+    private static final Pattern PATTERN = Pattern.compile("\\{(?<name>.*?)}");
 
     static {
         primitiveWrapperTypeMap.put("boolean", Boolean.class);
@@ -68,10 +71,6 @@ public class HttpRouteBuilder {
                         child = "/" + child;
                     }
 
-//                    if (child.matches("")){
-//
-//                    }
-
                     String key = parent + child;
                     if (requestMethods.length == 0) {
                         tags.add((key + "#" + "post").toUpperCase());
@@ -103,6 +102,8 @@ public class HttpRouteBuilder {
                                     } else if (parameters[i].isAnnotationPresent(PathVariable.class)) {
                                         PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
                                         nname = pathVariable.value();
+                                        Matcher matcher = PATTERN.matcher(tag);
+                                        tag = matcher.replaceAll("*");
                                     } else {
                                         nname = entry.getKey();
                                     }

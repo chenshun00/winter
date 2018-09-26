@@ -33,16 +33,22 @@ public class JsonUtilTest {
         assertFalse(embeddedChannel.finish());
     }
 
-    private static final Pattern PATTERN = Pattern.compile("\\{.*?}");
+    private static final Pattern PATTERN = Pattern.compile("\\{(?<name>.*?)}");
+    private static final Pattern PATH = Pattern.compile("\\{(?<name>.*?)}");
 
     @Test
     public void testPattern() {
         Matcher matcher = PATTERN.matcher("{hello}/{world}");
         while (matcher.find()) {
-            String group = matcher.group();
-            System.out.println(group);
+            System.out.println(matcher.group() + "\t" + matcher.group("name"));
         }
     }
 
-
+    @Test
+    public void testUrl() {
+        String url = "/path1/{info}/{ss1}/{ss2}";
+        Matcher matcher = PATTERN.matcher(url);
+        String s = matcher.replaceAll("*");
+        System.out.println(s);
+    }
 }
