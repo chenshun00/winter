@@ -1,5 +1,8 @@
 package top.huzhurong.web.support.http;
 
+import lombok.extern.slf4j.Slf4j;
+import top.huzhurong.ioc.bean.IocContainer;
+import top.huzhurong.ioc.bean.aware.IocContainerAware;
 import top.huzhurong.web.annotation.*;
 
 /**
@@ -8,7 +11,8 @@ import top.huzhurong.web.annotation.*;
  */
 @RequestMapping("t")
 @Controller
-public class UserCrtl {
+@Slf4j
+public class UserCrtl implements IocContainerAware {
 
     @Json
     @RequestMapping(value = "{name}/{info}/{age}/q.json")
@@ -42,9 +46,22 @@ public class UserCrtl {
                         @RequestParam("worldd") String world) {
         System.out.println("age:" + age);
         System.out.println("world:" + world);
-//        int i = 100 / 0;
         System.out.println("hello:" + hello);
         return "query" + name;
     }
 
+    private IocContainer iocContainer;
+
+    @Json
+    @RequestMapping("cc")
+    public User factoryBean() {
+        User bean = iocContainer.getBean(User.class);
+        log.info("user :{}", bean);
+        return bean;
+    }
+
+    @Override
+    public void setIocContainer(IocContainer iocContainer) {
+        this.iocContainer = iocContainer;
+    }
 }

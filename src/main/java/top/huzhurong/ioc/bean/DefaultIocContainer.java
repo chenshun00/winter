@@ -4,6 +4,8 @@ import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.NameGenerator;
+import top.huzhurong.aop.core.StringUtil;
+import top.huzhurong.ioc.bean.aware.FactoryBean;
 import top.huzhurong.web.annotation.ControllerAdvice;
 import top.huzhurong.web.annotation.Exceptional;
 import top.huzhurong.web.support.http.ControllerBean;
@@ -129,6 +131,11 @@ public class DefaultIocContainer implements IocContainer {
                         }
                     }
                 }
+            }
+            if (FactoryBean.class.isAssignableFrom(info.getaClass())) {
+                FactoryBean factoryBean = (FactoryBean) instance;
+                Object object = factoryBean.getObject();
+                this.put(StringUtil.handleClassName(factoryBean.getObjectType()), object);
             }
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();

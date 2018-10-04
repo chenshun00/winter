@@ -15,9 +15,9 @@ public class CglibProxyTest extends InitTest {
 
     @Before
     public void before() {
-        init.setBootClass(CglibProxyTest.class);
-        init.instantiation();
-        this.beanFactory = init.getIocContainer();
+        winter.setBootClass(CglibProxyTest.class);
+        winter.start();
+        this.beanFactory = winter.getIocContainer();
     }
 
     @Test
