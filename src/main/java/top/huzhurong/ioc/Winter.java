@@ -28,6 +28,7 @@ import top.huzhurong.web.support.http.HttpTradingCenter;
 import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.HttpRouteBuilder;
 import top.huzhurong.web.support.route.Route;
+import top.huzhurong.xbatis.MybatisFactoryBean;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -69,7 +70,8 @@ public class Winter {
     }
 
     private void prepare(Set<ClassInfo> info) {
-        info.add(new ClassInfo(Environment.class, StringUtil.handleClassName(Environment.class)));
+        Environment environment = new Environment();
+        info.add(new ClassInfo(environment.getClass(), StringUtil.handleClassName(Environment.class)));
         info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
 
         info.add(new ClassInfo(HttpTradingCenter.class, StringUtil.handleClassName(HttpTradingCenter.class)));
@@ -78,6 +80,10 @@ public class Winter {
 
         info.add(new ClassInfo(NettyServer.class, StringUtil.handleClassName(NettyServer.class)));
         info.add(new ClassInfo(HttpServerHandler.class, StringUtil.handleClassName(HttpServerHandler.class)));
+
+        if (environment.importOrm()) {
+            info.add(new ClassInfo(MybatisFactoryBean.class, StringUtil.handleClassName(HttpServerHandler.class)));
+        }
 
         AopConfigUtil.handleConfig(info, this.bootClass);
     }

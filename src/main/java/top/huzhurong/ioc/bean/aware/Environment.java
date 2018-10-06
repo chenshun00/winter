@@ -14,6 +14,10 @@ import java.util.Set;
  */
 @Slf4j
 public class Environment {
+
+    private final static String MYBATIS_CONFIG = "mybatis-config";
+    public static String MYBATIS = null;
+
     private static Map<String, Object> context = new HashMap<>();
 
     static {
@@ -30,9 +34,19 @@ public class Environment {
                 Properties pp = new Properties();
                 pp.stringPropertyNames().forEach(key -> context.put(key, properties.getProperty(key)));
             }
+
+            if (context.get(MYBATIS_CONFIG) != null) {
+                MYBATIS = (String) context.get(MYBATIS_CONFIG);
+            } else {
+                MYBATIS = "";
+            }
         } catch (Exception e) {
             log.error("load application.properties file occur exception : " + e);
         }
+    }
+
+    public boolean importOrm() {
+        return context.get(MYBATIS_CONFIG) != null;
     }
 
     public String getString(String key) {

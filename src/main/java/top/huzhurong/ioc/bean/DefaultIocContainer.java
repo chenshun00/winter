@@ -5,11 +5,14 @@ import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.NameGenerator;
 import top.huzhurong.aop.core.StringUtil;
+import top.huzhurong.ioc.bean.aware.Environment;
 import top.huzhurong.ioc.bean.aware.FactoryBean;
 import top.huzhurong.web.annotation.ControllerAdvice;
 import top.huzhurong.web.annotation.Exceptional;
 import top.huzhurong.web.support.http.ControllerBean;
+import top.huzhurong.xbatis.MybatisFactoryBean;
 
+import javax.sql.DataSource;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +27,8 @@ public class DefaultIocContainer implements IocContainer {
     private Map<String, Object> context;
     private Map<String, BeanInfo> beanInfoMap;
     private List<String> beanNamesList = new ArrayList<>(256);
+
+    private Set<ClassInfo> classInfos = new LinkedHashSet<>(16);
 
     public DefaultIocContainer() {
         context = new ConcurrentHashMap<>(128);
@@ -58,6 +63,9 @@ public class DefaultIocContainer implements IocContainer {
     @Override
     public Set<ClassInfo> register(Set<ClassInfo> classInfoSet) {
         classInfoSet.forEach(this::accept);
+        if (classInfos.size() > 0) {
+            classInfos.forEach(this::accept);
+        }
         return classInfoSet;
     }
 
@@ -133,9 +141,21 @@ public class DefaultIocContainer implements IocContainer {
                 }
             }
             if (FactoryBean.class.isAssignableFrom(info.getaClass())) {
-                FactoryBean factoryBean = (FactoryBean) instance;
-                Object object = factoryBean.getObject();
-                this.put(StringUtil.handleClassName(factoryBean.getObjectType()), object);
+                if (info.getClassName().equals("mybatisFactoryBean")) {
+                    MybatisFactoryBean mybatisFactoryBean = (MybatisFactoryBean) instance;
+                    mybatisFactoryBean.setXbatisConfig(Environment.MYBATIS);
+                    if (getBean(DataSource.class) == null) {
+                        classInfos.add(info);
+                    } else {
+                        mybatisFactoryBean.setDataSource(getBean(DataSource.class));
+                        Object object = mybatisFactoryBean.getObject();
+                        this.put(StringUtil.handleClassName(mybatisFactoryBean.getObjectType()), object);
+                    }
+                } else {
+                    FactoryBean factoryBean = (FactoryBean) instance;
+                    Object object = factoryBean.getObject();
+                    this.put(StringUtil.handleClassName(factoryBean.getObjectType()), object);
+                }
             }
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
