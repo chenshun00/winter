@@ -1,6 +1,6 @@
 package top.huzhurong.web.support.route;
 
-import top.huzhurong.aop.core.StringUtil;
+import top.huzhurong.util.StringUtil;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.PathVariable;
 import top.huzhurong.web.annotation.RequestMapping;

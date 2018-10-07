@@ -1,11 +1,11 @@
 package top.huzhurong.ioc.bean.processor;
 
-import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Configuration;
 import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
+import top.huzhurong.util.StringUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -25,14 +25,14 @@ public class ConfigurationUtil implements IocContainerAware {
 
     public void handleConfig(Set<ClassInfo> classInfoSet) {
         Set<ClassInfo> collect = classInfoSet.stream()
-                .map(classInfo -> this.handle(classInfo, classInfoSet))
+                .map(this::handle)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
         classInfoSet.addAll(collect);
 
     }
 
-    private Set<ClassInfo> handle(ClassInfo classInfo, final Set<ClassInfo> classInfoSet) {
+    private Set<ClassInfo> handle(ClassInfo classInfo) {
         Class<?> aClass = classInfo.getaClass();
         Set<ClassInfo> set = new HashSet<>();
         Configuration declaredAnnotation = aClass.getDeclaredAnnotation(Configuration.class);

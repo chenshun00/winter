@@ -34,6 +34,10 @@ public class ConnectionManager {
         connectionThreadLocal.set(Objects.requireNonNull(connectionManager));
     }
 
+    public static boolean exist() {
+        return connectionThreadLocal.get() != null;
+    }
+
     public static ConnectionManager get() {
         return connectionThreadLocal.get();
     }

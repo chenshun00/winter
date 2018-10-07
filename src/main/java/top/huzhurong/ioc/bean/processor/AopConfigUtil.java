@@ -4,9 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.aop.advisor.pointcut.TransactionPointcut;
 import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
-import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
 import top.huzhurong.ioc.bean.ClassInfo;
+import top.huzhurong.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Objects;

@@ -55,7 +55,12 @@ public class JdbcTransactionManager implements TransactionManager, IocContainerA
             Transaction transaction = new Transaction();
             transaction.setActive(true);
             transaction.setNewTransaction(true);
-            ConnectionManager connectionManager = new ConnectionManager();
+            ConnectionManager connectionManager;
+            if (ConnectionManager.exist()) {
+                connectionManager = ConnectionManager.get();
+            } else {
+                connectionManager = new ConnectionManager();
+            }
             Connection connection = this.dataSource.getConnection();
             connectionManager.setConnection(connection);
             connectionManager.setNewConnection(true);

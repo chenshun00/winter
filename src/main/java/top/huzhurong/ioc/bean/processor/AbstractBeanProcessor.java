@@ -1,7 +1,6 @@
 package top.huzhurong.ioc.bean.processor;
 
 import top.huzhurong.aop.advisor.Advisor;
-import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.BeanFactory;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
@@ -14,7 +13,6 @@ import java.util.List;
  */
 public abstract class AbstractBeanProcessor implements BeanProcessor, IocContainerAware {
 
-    @Inject
     private IocContainer iocContainer;
 
     @Override

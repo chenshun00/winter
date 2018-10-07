@@ -1,6 +1,6 @@
 package top.huzhurong.aop.advisor.pointcut;
 
-import top.huzhurong.aop.core.StringUtil;
+import top.huzhurong.util.StringUtil;
 
 import java.lang.reflect.Method;
 

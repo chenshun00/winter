@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <typeAliases>
+        <!--bean-->
+        <typeAlias alias="Test" type="top.huzhurong.web.util.Test"/>
+        <!--query-->
+        <typeAlias alias="TestQuery" type="top.huzhurong.web.util.query.TestQuery"/>
+    </typeAliases>
+    <mappers>
+        <mapper resource="mapper/test.xml"/>
+    </mappers>
+</configuration>

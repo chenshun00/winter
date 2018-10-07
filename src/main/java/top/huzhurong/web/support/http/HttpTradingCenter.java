@@ -132,9 +132,11 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
                 ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke);
             }
         } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
             response.sendError(HttpResponseStatus.OK, ex.getMessage());
         } catch (InvocationTargetException ex) {
             Throwable targetException = ex.getTargetException();
+            targetException.printStackTrace();
             if (this.controllerBean != null) {
                 Method exceptionHandle = this.controllerBean.getExceptionHandle(targetException.getClass());
                 if (exceptionHandle != null) {

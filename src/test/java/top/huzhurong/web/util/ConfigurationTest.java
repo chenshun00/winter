@@ -1,4 +1,4 @@
-package top.huzhurong.ioc.scan.test.config;
+package top.huzhurong.web.util;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import top.huzhurong.ioc.InitTest;
@@ -17,11 +17,6 @@ import javax.sql.DataSource;
 public class ConfigurationTest implements EnvironmentAware {
 
     private Environment environment;
-
-    @Bean
-    public Hello hello() {
-        return new Hello();
-    }
 
     @Bean
     public DataSource dataSource() {

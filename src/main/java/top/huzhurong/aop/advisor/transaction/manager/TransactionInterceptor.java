@@ -10,6 +10,7 @@ import top.huzhurong.aop.advisor.transaction.definition.TransactionStatus;
 import top.huzhurong.aop.invocation.AbstractInvocation;
 import top.huzhurong.aop.invocation.Invocation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 /**
@@ -37,6 +38,10 @@ public class TransactionInterceptor {
         try {
             invoke = abstractInvocation.getMethod().invoke(object, abstractInvocation.getArgs());
             commitTransactionAfterReturning(transaction);
+        } catch (InvocationTargetException e) {
+            log.error("事务处理出现异常:{},开始进行事务回滚", e.getTargetException().getMessage());
+            completeTransactionAfterThrowing(transaction);
+            e.printStackTrace();
         } catch (Throwable e) {
             log.error("事务处理出现异常:{},开始进行事务回滚", e.getMessage());
             completeTransactionAfterThrowing(transaction);

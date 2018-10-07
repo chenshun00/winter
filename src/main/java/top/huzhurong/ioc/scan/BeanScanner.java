@@ -1,8 +1,8 @@
 package top.huzhurong.ioc.scan;
 
 import lombok.extern.slf4j.Slf4j;
-import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.bean.ClassInfo;
+import top.huzhurong.util.StringUtil;
 
 import java.io.File;
 import java.io.IOException;

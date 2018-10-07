@@ -69,13 +69,13 @@ public class MybatisFactoryBean implements FactoryBean<SqlSessionFactory>, InitA
         TransactionFactory transactionFactory = new ManagedTransactionFactory();
         Environment environment = new Environment(id, transactionFactory, this.dataSource);
         configuration.setEnvironment(environment);
-        this.sqlSessionFactory = builder.build(resource);
+        this.sqlSessionFactory = builder.build(configuration);
         return sqlSessionFactory;
     }
 
     @Override
     public Class<?> getObjectType() {
-        return this.sqlSessionFactory == null ? SqlSessionFactory.class : this.sqlSessionFactory.getClass();
+        return SqlSessionFactory.class;
     }
 
     @Override

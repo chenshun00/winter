@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.aop.advisor.Advisor;
 import top.huzhurong.aop.annotation.Aspectj;
 import top.huzhurong.aop.core.AspectjParser;
-import top.huzhurong.aop.core.StringUtil;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Configuration;
 import top.huzhurong.ioc.annotation.Inject;
@@ -19,6 +18,7 @@ import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
 import top.huzhurong.ioc.scan.BeanScanner;
+import top.huzhurong.util.StringUtil;
 import top.huzhurong.web.annotation.Controller;
 import top.huzhurong.web.annotation.ControllerAdvice;
 import top.huzhurong.web.annotation.Filter;
@@ -29,6 +29,8 @@ import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.HttpRouteBuilder;
 import top.huzhurong.web.support.route.Route;
 import top.huzhurong.xbatis.MybatisFactoryBean;
+import top.huzhurong.xbatis.SessionKit;
+import top.huzhurong.xbatis.SqlSessionBean;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -81,10 +83,6 @@ public class Winter {
         info.add(new ClassInfo(NettyServer.class, StringUtil.handleClassName(NettyServer.class)));
         info.add(new ClassInfo(HttpServerHandler.class, StringUtil.handleClassName(HttpServerHandler.class)));
 
-        if (environment.importOrm()) {
-            info.add(new ClassInfo(MybatisFactoryBean.class, StringUtil.handleClassName(HttpServerHandler.class)));
-        }
-
         AopConfigUtil.handleConfig(info, this.bootClass);
     }
 
@@ -113,6 +111,21 @@ public class Winter {
 
         ConfigurationUtil configurationUtil = iocContainer.getBean(ConfigurationUtil.class);
         configurationUtil.handleConfig(collect);
+
+
+        //这就是矛盾的地方，首先是我要用你，但是前提是你还没得用
+        if (iocContainer.getBean(Environment.class).importOrm()) {
+            ClassInfo sessionKit = new ClassInfo(SessionKit.class, StringUtil.handleClassName(SessionKit.class));
+            ClassInfo factoryBean = new ClassInfo(MybatisFactoryBean.class, StringUtil.handleClassName(MybatisFactoryBean.class));
+            ClassInfo sessionBean = new ClassInfo(SqlSessionBean.class, StringUtil.handleClassName(SqlSessionBean.class));
+            iocContainer.register(sessionKit);
+            iocContainer.register(factoryBean);
+            iocContainer.register(sessionBean);
+
+            collect.add(sessionKit);
+            collect.add(factoryBean);
+            collect.add(sessionBean);
+        }
 
         //get BeanProcessor class set
         List<String> beanNameForType = iocContainer.getBeanNameForType(BeanProcessor.class);
@@ -229,30 +242,46 @@ public class Winter {
      */
     private void inject(Object object) {
         Field[] declaredFields;
+        Class<?> clazz;
         if (AopConfigUtil.isCglibProxyClass(object.getClass())) {
             declaredFields = object.getClass().getSuperclass().getDeclaredFields();
+            clazz = object.getClass().getSuperclass();
         } else {
             declaredFields = object.getClass().getDeclaredFields();
+            clazz = object.getClass();
         }
-        Arrays.stream(declaredFields)
-                .filter(field -> field.getAnnotation(Inject.class) != null)
-                .forEach(ff -> {
-                    Inject inject = ff.getAnnotation(Inject.class);
-                    String value = inject.value();
-                    if (!value.equals("")) {
-                        Object bean = this.iocContainer.getBean(value);
-                        doInject(bean, ff, object);
-                    } else {
-                        String name = ff.getName();
-                        Object bean = this.iocContainer.getBean(name);
-                        doInject(bean, ff, object);
-                    }
-                });
+        do {
+            Arrays.stream(declaredFields)
+                    .filter(field -> field.getAnnotation(Inject.class) != null)
+                    .forEach(ff -> {
+                        Inject inject = ff.getAnnotation(Inject.class);
+                        String value = inject.value();
+                        if (!value.equals("")) {
+                            Object bean = this.iocContainer.getBean(value);
+                            doInject(bean, ff, object);
+                        } else {
+                            String name = ff.getName();
+                            Object bean = this.iocContainer.getBean(name);
+                            doInject(bean, ff, object);
+                        }
+                    });
+            clazz = clazz.getSuperclass();
+            declaredFields = clazz.getDeclaredFields();
+        } while (exist(declaredFields));
+    }
+
+    private boolean exist(Field[] declaredFields) {
+        for (Field declaredField : declaredFields) {
+            if (declaredField.isAnnotationPresent(Inject.class)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void doInject(Object bean, Field ff, Object object) {
         if (bean == null) {
-            throw new IllegalStateException("bean need to be injected is not exist:" + ff.getName());
+            throw new IllegalStateException(object + " bean need to be injected is not exist:" + ff.getName());
         } else {
             ff.setAccessible(true);
             try {
@@ -270,18 +299,25 @@ public class Winter {
      * @return true exist or false not exist
      */
     private boolean needInject(Object object) {
+        Class<?> clazz;
         Field[] declaredFields;
         if (object.getClass().getSimpleName().contains("$$")) {
             declaredFields = object.getClass().getSuperclass().getDeclaredFields();
+            clazz = object.getClass().getSuperclass();
         } else {
             declaredFields = object.getClass().getDeclaredFields();
+            clazz = object.getClass();
         }
 
-        for (Field declaredField : declaredFields) {
-            if (declaredField.getAnnotation(Inject.class) != null) {
-                return true;
+        do {
+            for (Field declaredField : declaredFields) {
+                if (declaredField.getAnnotation(Inject.class) != null) {
+                    return true;
+                }
             }
-        }
+            clazz = clazz.getSuperclass();
+            declaredFields = clazz.getDeclaredFields();
+        } while (exist(declaredFields));
         return false;
     }
 
