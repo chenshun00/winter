@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.ioc.annotation.Inject;
-import top.huzhurong.ioc.bean.IocContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +13,7 @@ import java.util.List;
  * @since 2018-10-07 01:21:30
  */
 @Slf4j
-public abstract class BaseDao<T> /** implements InitAware, IocContainerAware*/
-{
+public abstract class BaseDao<T> {
 
     private final static Integer BATCH_SIZE = 20;
 
@@ -23,7 +21,6 @@ public abstract class BaseDao<T> /** implements InitAware, IocContainerAware*/
     @Setter
     @Inject
     protected SqlSessionBean sqlSessionBean;
-    private IocContainer iocContainer;
 
     protected Integer batchInsert(String statement, List<T> lists) {
         if (lists == null || lists.size() == 0) {
@@ -71,16 +68,5 @@ public abstract class BaseDao<T> /** implements InitAware, IocContainerAware*/
             }
         }
         return keys.size();
-    }
-
-    //    @Override
-    public void initBean() {
-        sqlSessionBean = this.iocContainer.getBean(SqlSessionBean.class);
-        log.info("初始化sqlSessionBean");
-    }
-
-    //    @Override
-    public void setIocContainer(IocContainer iocContainer) {
-        this.iocContainer = iocContainer;
     }
 }
