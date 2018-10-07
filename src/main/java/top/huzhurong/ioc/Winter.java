@@ -155,6 +155,9 @@ public class Winter {
         HttpRouteBuilder builder = this.iocContainer.getBean(HttpRouteBuilder.class);
         for (String ii : list) {
             Object bean = this.iocContainer.getBean(ii);
+            if (AopConfigUtil.isCglibProxyClass(bean.getClass()) && bean.getClass().getSuperclass().isAnnotationPresent(Controller.class)) {
+                routeList.addAll(builder.buildRoute(bean));
+            }
             if (bean.getClass().getAnnotation(Controller.class) != null) {
                 routeList.addAll(builder.buildRoute(bean));
             }

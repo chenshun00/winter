@@ -31,7 +31,7 @@ public class UserCrtl {
         test.setName("winter");
         testDao.updateTestByKey(test);
         System.out.println(JSONObject.toJSONString(test));
-        int i = 10 / 0;
+        //int i = 10 / 0;
         return test;
     }
 

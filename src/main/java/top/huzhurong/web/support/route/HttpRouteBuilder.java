@@ -1,5 +1,6 @@
 package top.huzhurong.web.support.route;
 
+import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.util.StringUtil;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.PathVariable;
@@ -44,9 +45,13 @@ public class HttpRouteBuilder {
      * 基本类型靠parse，自定义类型，就只能反射set了
      */
     public List<Route> buildRoute(Object instance) {
+        Class<?> clazz = instance.getClass();
+        if (AopConfigUtil.isCglibProxyClass(clazz)) {
+            clazz = instance.getClass().getSuperclass();
+        }
         List<Route> routeList = new LinkedList<>();
-        RequestMapping requestMapping = instance.getClass().getDeclaredAnnotation(RequestMapping.class);
-        Method[] declaredMethods = instance.getClass().getDeclaredMethods();
+        RequestMapping requestMapping = clazz.getDeclaredAnnotation(RequestMapping.class);
+        Method[] declaredMethods = clazz.getDeclaredMethods();
         for (Method declaredMethod : declaredMethods) {
             if (Modifier.isPublic(declaredMethod.getModifiers()) && !Modifier.isStatic(declaredMethod.getModifiers())) {
                 RequestMapping declaredAnnotation = declaredMethod.getDeclaredAnnotation(RequestMapping.class);
@@ -63,7 +68,7 @@ public class HttpRouteBuilder {
 
                     String child = declaredAnnotation.value();
                     if (StringUtil.containSpace(child)) {
-                        throw new RuntimeException("class:" + instance.getClass().getName() +
+                        throw new RuntimeException("class:" + clazz.getName() +
                                 "--RequestMapping#value can't be null or contain writeSpace");
                     }
                     if (!child.startsWith("/")) {
@@ -113,7 +118,7 @@ public class HttpRouteBuilder {
                         }
 
                         route.setJson(json != null);
-                        route.setTargetClass(instance.getClass());
+                        route.setTargetClass(clazz);
                         route.setMethod(declaredMethod);
                         route.setTarget(instance);
                         route.setMapping(tag);
