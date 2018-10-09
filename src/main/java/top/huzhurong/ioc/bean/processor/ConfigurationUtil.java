@@ -2,11 +2,14 @@ package top.huzhurong.ioc.bean.processor;
 
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Configuration;
+import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.ClassInfo;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.ReflectUtils;
+import top.huzhurong.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -23,24 +26,58 @@ public class ConfigurationUtil implements IocContainerAware {
 
     private IocContainer iocContainer;
 
+    private Set<ClassInfo> classInfos = new HashSet<>(32);
+
+    private boolean flag = true;
+
     public void handleConfig(Set<ClassInfo> classInfoSet) {
         Set<ClassInfo> collect = classInfoSet.stream()
                 .map(this::handle)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
         classInfoSet.addAll(collect);
-
+        handleLast(classInfoSet);
     }
 
+    private void handleLast(Set<ClassInfo> classInfoSet) {
+        flag = false;
+        if (classInfos.size() != 0) {
+            Set<ClassInfo> collect = classInfoSet.stream()
+                    .map(this::handle)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toSet());
+            classInfoSet.addAll(collect);
+        }
+    }
+
+    /**
+     * @param classInfo bean
+     * @return 注入的方法
+     */
     private Set<ClassInfo> handle(ClassInfo classInfo) {
         Class<?> aClass = classInfo.getaClass();
         Set<ClassInfo> set = new HashSet<>();
-        Configuration declaredAnnotation = aClass.getDeclaredAnnotation(Configuration.class);
-        if (declaredAnnotation != null) {
+        if (aClass.isAnnotationPresent(Configuration.class)) {
+            //第一步:注入字段，把那些没有依赖的数据注入到ioc当中，需要要依赖随后注入
+            if (flag) {
+                Field[] fields = aClass.getDeclaredFields();
+                for (Field field : fields) {
+                    if (field.isAnnotationPresent(Inject.class)) {
+                        Object bean = this.iocContainer.getBean(field.getType());
+                        if (bean == null) {
+                            classInfos.add(classInfo);
+                            return null;
+                        } else {
+                            ReflectUtils.setField(field, this.iocContainer.getBean(classInfo.getaClass()), bean);
+                        }
+                    }
+                }
+            }
+
             Method[] declaredMethods = aClass.getDeclaredMethods();
             Object bean = iocContainer.getBean(aClass);
             Stream.of(declaredMethods).forEach(method -> {
-                if (method.getDeclaredAnnotation(Bean.class) != null) {
+                if (method.isAnnotationPresent(Bean.class)) {
                     set.add(handleMethod(method, bean));
                 }
             });
@@ -57,8 +94,8 @@ public class ConfigurationUtil implements IocContainerAware {
             e.printStackTrace();
         }
 
-        iocContainer.put(StringUtil.handleClassName(returnType), invoke);
-        return new ClassInfo(returnType, StringUtil.handleClassName(returnType));
+        iocContainer.put(StringUtils.handleClassName(returnType), invoke);
+        return new ClassInfo(returnType, StringUtils.handleClassName(returnType));
     }
 
     @Override

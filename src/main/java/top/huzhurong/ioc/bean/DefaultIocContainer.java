@@ -6,7 +6,7 @@ import top.huzhurong.aop.core.AspectjParser;
 import top.huzhurong.aop.core.NameGenerator;
 import top.huzhurong.ioc.bean.aware.Environment;
 import top.huzhurong.ioc.bean.aware.FactoryBean;
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.StringUtils;
 import top.huzhurong.web.annotation.ControllerAdvice;
 import top.huzhurong.web.annotation.Exceptional;
 import top.huzhurong.web.support.http.ControllerBean;
@@ -149,12 +149,12 @@ public class DefaultIocContainer implements IocContainer {
                     } else {
                         mybatisFactoryBean.setDataSource(getBean(DataSource.class));
                         Object object = mybatisFactoryBean.getObject();
-                        this.put(StringUtil.handleClassName(mybatisFactoryBean.getObjectType()), object);
+                        this.put(StringUtils.handleClassName(mybatisFactoryBean.getObjectType()), object);
                     }
                 } else {
                     FactoryBean factoryBean = (FactoryBean) instance;
                     Object object = factoryBean.getObject();
-                    this.put(StringUtil.handleClassName(factoryBean.getObjectType()), object);
+                    this.put(StringUtils.handleClassName(factoryBean.getObjectType()), object);
                 }
             }
         } catch (InstantiationException | IllegalAccessException e) {

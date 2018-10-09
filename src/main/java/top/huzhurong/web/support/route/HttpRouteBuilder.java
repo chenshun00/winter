@@ -1,7 +1,7 @@
 package top.huzhurong.web.support.route;
 
 import top.huzhurong.ioc.bean.processor.AopConfigUtil;
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.StringUtils;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.PathVariable;
 import top.huzhurong.web.annotation.RequestMapping;
@@ -67,7 +67,7 @@ public class HttpRouteBuilder {
                     }
 
                     String child = declaredAnnotation.value();
-                    if (StringUtil.containSpace(child)) {
+                    if (StringUtils.containSpace(child)) {
                         throw new RuntimeException("class:" + clazz.getName() +
                                 "--RequestMapping#value can't be null or contain writeSpace");
                     }

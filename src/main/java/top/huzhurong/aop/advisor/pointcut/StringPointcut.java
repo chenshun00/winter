@@ -1,6 +1,6 @@
 package top.huzhurong.aop.advisor.pointcut;
 
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.StringUtils;
 
 import java.lang.reflect.Method;
 
@@ -50,7 +50,7 @@ public class StringPointcut implements Pointcut {
         methodName = param[0];
         parameter = param[1].substring(0, param[1].length() - 1);
         handler();
-        StringUtil.validate(modifier, className, methodName);
+        StringUtils.validate(modifier, className, methodName);
     }
 
     private void handler() {

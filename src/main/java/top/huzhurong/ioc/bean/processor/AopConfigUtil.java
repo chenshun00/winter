@@ -6,7 +6,7 @@ import top.huzhurong.aop.advisor.transaction.TransactionManager;
 import top.huzhurong.aop.advisor.transaction.manager.JdbcTransactionManager;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
 import top.huzhurong.ioc.bean.ClassInfo;
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -35,13 +35,13 @@ public class AopConfigUtil {
     private static void doConfig(String config, Set<ClassInfo> classInfoSet) {
         if ("aop".equals(config)) {
             log.info("start handle aop, add AopBeanProcessor.class");
-            ClassInfo classInfo = new ClassInfo(AopBeanProcessor.class, StringUtil.handleClassName(AopBeanProcessor.class));
+            ClassInfo classInfo = new ClassInfo(AopBeanProcessor.class, StringUtils.handleClassName(AopBeanProcessor.class));
             classInfoSet.add(classInfo);
         } else if ("transaction".equals(config)) {
             log.info("start handle transaction, add TransactionBeanProcessor.class");
-            ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtil.handleClassName(TransactionBeanProcessor.class));
-            ClassInfo transaction = new ClassInfo(JdbcTransactionManager.class, StringUtil.handleClassName(TransactionManager.class));
-            ClassInfo pointCut = new ClassInfo(TransactionPointcut.class, StringUtil.handleClassName(TransactionPointcut.class));
+            ClassInfo classInfo = new ClassInfo(TransactionBeanProcessor.class, StringUtils.handleClassName(TransactionBeanProcessor.class));
+            ClassInfo transaction = new ClassInfo(JdbcTransactionManager.class, StringUtils.handleClassName(TransactionManager.class));
+            ClassInfo pointCut = new ClassInfo(TransactionPointcut.class, StringUtils.handleClassName(TransactionPointcut.class));
             classInfoSet.add(pointCut);
             classInfoSet.add(classInfo);
             classInfoSet.add(transaction);

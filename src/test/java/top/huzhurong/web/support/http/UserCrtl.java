@@ -26,6 +26,7 @@ public class UserCrtl {
     @RequestMapping("t")
     @Json
     public Object first() {
+        System.out.println("testDao:" + testDao);
         Test test = testDao.selectTestByKey(18);
         test.setAge(111);
         test.setName("winter");

@@ -4,8 +4,10 @@ import com.alibaba.druid.pool.DruidDataSource;
 import top.huzhurong.ioc.InitTest;
 import top.huzhurong.ioc.annotation.Bean;
 import top.huzhurong.ioc.annotation.Configuration;
+import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.aware.Environment;
 import top.huzhurong.ioc.bean.aware.EnvironmentAware;
+import top.huzhurong.web.util.dao.TestDao;
 
 import javax.sql.DataSource;
 
@@ -17,6 +19,9 @@ import javax.sql.DataSource;
 public class ConfigurationTest implements EnvironmentAware {
 
     private Environment environment;
+
+    @Inject
+    private TestDao testDao;
 
     @Bean
     public DataSource dataSource() {
@@ -33,6 +38,9 @@ public class ConfigurationTest implements EnvironmentAware {
         druidDataSource.setTestOnBorrow(false);
         druidDataSource.setTestOnReturn(false);
         druidDataSource.setTestWhileIdle(true);
+
+        System.out.println("testDao:" + testDao);
+
         return druidDataSource;
     }
 

@@ -18,7 +18,7 @@ import top.huzhurong.ioc.bean.processor.AopConfigUtil;
 import top.huzhurong.ioc.bean.processor.BeanProcessor;
 import top.huzhurong.ioc.bean.processor.ConfigurationUtil;
 import top.huzhurong.ioc.scan.BeanScanner;
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.StringUtils;
 import top.huzhurong.web.annotation.Controller;
 import top.huzhurong.web.annotation.ControllerAdvice;
 import top.huzhurong.web.annotation.Filter;
@@ -72,16 +72,15 @@ public class Winter {
     }
 
     private void prepare(Set<ClassInfo> info) {
-        Environment environment = new Environment();
-        info.add(new ClassInfo(environment.getClass(), StringUtil.handleClassName(Environment.class)));
-        info.add(new ClassInfo(ConfigurationUtil.class, StringUtil.handleClassName(ConfigurationUtil.class)));
+        info.add(new ClassInfo(Environment.class, StringUtils.handleClassName(Environment.class)));
+        info.add(new ClassInfo(ConfigurationUtil.class, StringUtils.handleClassName(ConfigurationUtil.class)));
 
-        info.add(new ClassInfo(HttpTradingCenter.class, StringUtil.handleClassName(HttpTradingCenter.class)));
-        info.add(new ClassInfo(HttpRouteBuilder.class, StringUtil.handleClassName(HttpRouteBuilder.class)));
-        info.add(new ClassInfo(HttpMatcher.class, StringUtil.handleClassName(HttpMatcher.class)));
+        info.add(new ClassInfo(HttpTradingCenter.class, StringUtils.handleClassName(HttpTradingCenter.class)));
+        info.add(new ClassInfo(HttpRouteBuilder.class, StringUtils.handleClassName(HttpRouteBuilder.class)));
+        info.add(new ClassInfo(HttpMatcher.class, StringUtils.handleClassName(HttpMatcher.class)));
 
-        info.add(new ClassInfo(NettyServer.class, StringUtil.handleClassName(NettyServer.class)));
-        info.add(new ClassInfo(HttpServerHandler.class, StringUtil.handleClassName(HttpServerHandler.class)));
+        info.add(new ClassInfo(NettyServer.class, StringUtils.handleClassName(NettyServer.class)));
+        info.add(new ClassInfo(HttpServerHandler.class, StringUtils.handleClassName(HttpServerHandler.class)));
 
         AopConfigUtil.handleConfig(info, this.bootClass);
     }
@@ -112,12 +111,10 @@ public class Winter {
         ConfigurationUtil configurationUtil = iocContainer.getBean(ConfigurationUtil.class);
         configurationUtil.handleConfig(collect);
 
-
-        //这就是矛盾的地方，首先是我要用你，但是前提是你还没得用
         if (iocContainer.getBean(Environment.class).importOrm()) {
-            ClassInfo sessionKit = new ClassInfo(SessionKit.class, StringUtil.handleClassName(SessionKit.class));
-            ClassInfo factoryBean = new ClassInfo(MybatisFactoryBean.class, StringUtil.handleClassName(MybatisFactoryBean.class));
-            ClassInfo sessionBean = new ClassInfo(SqlSessionBean.class, StringUtil.handleClassName(SqlSessionBean.class));
+            ClassInfo sessionKit = new ClassInfo(SessionKit.class, StringUtils.handleClassName(SessionKit.class));
+            ClassInfo factoryBean = new ClassInfo(MybatisFactoryBean.class, StringUtils.handleClassName(MybatisFactoryBean.class));
+            ClassInfo sessionBean = new ClassInfo(SqlSessionBean.class, StringUtils.handleClassName(SqlSessionBean.class));
             iocContainer.register(sessionKit);
             iocContainer.register(factoryBean);
             iocContainer.register(sessionBean);
@@ -214,7 +211,7 @@ public class Winter {
         String name = bean != null ? bean.value() : controller != null ?
                 controller.value() : aspectj != null ? aspectj.value() : null;
         if (name == null || name.length() == 0) {
-            name = StringUtil.handleClassName(classInfo.getaClass().getSimpleName());
+            name = StringUtils.handleClassName(classInfo.getaClass().getSimpleName());
         }
         classInfo.setClassName(name);
         return classInfo;
@@ -255,7 +252,7 @@ public class Winter {
         }
         do {
             Arrays.stream(declaredFields)
-                    .filter(field -> field.getAnnotation(Inject.class) != null)
+                    .filter(field -> field.isAnnotationPresent(Inject.class))
                     .forEach(ff -> {
                         Inject inject = ff.getAnnotation(Inject.class);
                         String value = inject.value();
@@ -314,7 +311,7 @@ public class Winter {
 
         do {
             for (Field declaredField : declaredFields) {
-                if (declaredField.getAnnotation(Inject.class) != null) {
+                if (declaredField.isAnnotationPresent(Inject.class)) {
                     return true;
                 }
             }

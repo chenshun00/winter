@@ -2,7 +2,7 @@ package top.huzhurong.ioc.scan;
 
 import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.ioc.bean.ClassInfo;
-import top.huzhurong.util.StringUtil;
+import top.huzhurong.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class BeanScanner {
         try {
             Class<?> aClass = Class.forName(path);
             String simpleName = aClass.getSimpleName();
-            ClassInfo classInfo = new ClassInfo(aClass, StringUtil.handleClassName(simpleName));
+            ClassInfo classInfo = new ClassInfo(aClass, StringUtils.handleClassName(simpleName));
             return Optional.of(classInfo);
         } catch (Exception e) {
             e.printStackTrace();
