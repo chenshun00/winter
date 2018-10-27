@@ -15,6 +15,7 @@ public class FirstInterceptor implements Interceptor {
     @Override
     public boolean preHandle(Request request, Response response) {
         System.out.println("FirstInterceptor preHandle");
+        request.getHttpSession().setAttribute("chenshun", "chenshun00");
         return true;
     }
 

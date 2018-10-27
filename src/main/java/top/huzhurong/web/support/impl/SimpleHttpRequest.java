@@ -12,6 +12,7 @@ import lombok.Setter;
 import top.huzhurong.util.WebUtil;
 import top.huzhurong.web.support.http.HttpCookie;
 import top.huzhurong.web.support.http.HttpHeader;
+import top.huzhurong.web.support.http.SessionManager;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -43,9 +44,12 @@ public class SimpleHttpRequest implements Request {
 
     private Map<String, Object> params;
 
+    private String sessionId;
+
     //解析参数给route用
     public static SimpleHttpRequest buildRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         return SimpleHttpRequest.builder().ctx(ctx).httpRequest(httpRequest)
+                .sessionId(SessionManager.createHttpSession())
                 .method(httpRequest.method().name())
                 .httpHeaders(parseHttpHeader(httpRequest))
                 .httpCookies(parseCookie(httpRequest))
@@ -92,4 +96,11 @@ public class SimpleHttpRequest implements Request {
         return this.httpRequest.protocolVersion().protocolName();
     }
 
+    @Override
+    public HttpSession getHttpSession() {
+        if (this.sessionId == null) {
+            this.sessionId = SessionManager.createHttpSession();
+        }
+        return SessionManager.getHttpSession(this.sessionId);
+    }
 }
