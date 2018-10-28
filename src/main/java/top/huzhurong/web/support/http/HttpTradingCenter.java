@@ -1,9 +1,12 @@
 package top.huzhurong.web.support.http;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.multipart.FileUpload;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.ioc.bean.aware.IocContainerAware;
@@ -13,6 +16,8 @@ import top.huzhurong.web.support.impl.SimpleHttpRequest;
 import top.huzhurong.web.support.impl.SimpleHttpResponse;
 import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.Route;
+import top.huzhurong.web.support.upload.MultipartFile;
+import top.huzhurong.web.support.upload.SimpleMultipartFile;
 import top.huzhurong.web.util.AntPathMatcher;
 import top.huzhurong.web.util.PathMatcher;
 
@@ -29,6 +34,7 @@ import java.util.Map;
  * @since 2018/9/19
  */
 @Setter
+@Slf4j
 public class HttpTradingCenter implements IocContainerAware, InitAware {
 
     private IocContainer iocContainer;
@@ -84,7 +90,10 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
                 if (request.getMethod().equalsIgnoreCase("POST")
                         || request.getMethod().equalsIgnoreCase("PUT")
                         || request.getMethod().equalsIgnoreCase("DELETE")) {
-                    paramMap = httpParameterParser.parsetPostParams(ctx, httpRequest, response);
+                    paramMap = httpParameterParser.parsetPostParams(ctx, (FullHttpRequest) httpRequest, response);
+                    if (paramMap == null) {
+                        return;
+                    }
                 } else {
                     response.sendError(HttpResponseStatus.BAD_REQUEST, "不支持" + request.getMethod());
                     return;
@@ -173,25 +182,29 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
             param = request;
         } else if (aClass.isAssignableFrom(Response.class)) {
             param = response;
-        } else //Date date = (Date) aClass.newInstance();
-            if (aClass.isAssignableFrom(Date.class)) {
-                param = object;
-            } else {
-                try {
-                    param = aClass.newInstance();
-                    Map<String, Object> params = request.getParams();
-                    Field[] declaredFields = param.getClass().getDeclaredFields();
-                    for (Field declaredField : declaredFields) {
-                        String name = declaredField.getName();
-                        if (params.get(name) != null) {
-                            declaredField.setAccessible(true);
-                            declaredField.set(param, priai(declaredField.getType(), params.get(name)));
-                        }
+        } else if (aClass.isAssignableFrom(MultipartFile.class)) {
+            FileUpload fileUpload = (FileUpload) object;
+            log.info("upload file name:{}", fileUpload.getFilename());
+            param = new SimpleMultipartFile();
+            ((SimpleMultipartFile) param).setFileUpload(fileUpload);
+        } else if (aClass.isAssignableFrom(Date.class)) {
+            param = object;
+        } else {
+            try {
+                param = aClass.newInstance();
+                Map<String, Object> params = request.getParams();
+                Field[] declaredFields = param.getClass().getDeclaredFields();
+                for (Field declaredField : declaredFields) {
+                    String name = declaredField.getName();
+                    if (params.get(name) != null) {
+                        declaredField.setAccessible(true);
+                        declaredField.set(param, priai(declaredField.getType(), params.get(name)));
                     }
-                } catch (InstantiationException | IllegalAccessException e) {
-                    e.printStackTrace();
                 }
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
             }
+        }
         return param;
     }
 

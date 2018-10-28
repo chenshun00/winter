@@ -53,22 +53,18 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
             return;
         }
 
-        if (decoder != null) {
-            // New chunk is received
-            try {
-                decoder.offer(request);
-            } catch (HttpPostRequestDecoder.ErrorDataDecoderException e1) {
-                e1.printStackTrace();
-                sendError(ctx, HttpResponseStatus.BAD_REQUEST, "Failed to decode file data");
-                return;
-            }
-
-            readHttpDataChunkByChunk(ctx);
-            // example of reading only if at the end
-            reset(request);
-        } else {
+        // New chunk is received
+        try {
+            decoder.offer(request);
+        } catch (HttpPostRequestDecoder.ErrorDataDecoderException e1) {
+            e1.printStackTrace();
             sendError(ctx, HttpResponseStatus.BAD_REQUEST, "Failed to decode file data");
+            return;
         }
+
+        readHttpDataChunkByChunk(ctx);
+        // example of reading only if at the end
+        reset(request);
 
     }
 
@@ -134,7 +130,6 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
      * chunk
      */
     private void readHttpDataChunkByChunk(ChannelHandlerContext ctx) {
-        //decoder.isMultipart();
         if (decoder.isMultipart()) {
             try {
                 while (decoder.hasNext()) {
@@ -158,6 +153,8 @@ public class HttpStaticFileServerHandler extends SimpleChannelInboundHandler<Ful
             FileUpload fileUpload = (FileUpload) data;
             if (fileUpload.isCompleted()) {
                 JSONObject json = saveFileToDisk(fileUpload);
+                String filename = fileUpload.getFilename();
+                String contentType = fileUpload.getContentType();
                 sendUploadedFileName(json, ctx);
             } else {
                 sendError(ctx, HttpResponseStatus.BAD_REQUEST, "Unknown error occurred");

@@ -7,7 +7,10 @@ import top.huzhurong.web.annotation.Controller;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.RequestMapping;
 import top.huzhurong.web.support.impl.Request;
+import top.huzhurong.web.support.upload.MultipartFile;
 import top.huzhurong.web.util.dao.TestDao;
+
+import java.io.IOException;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -24,9 +27,12 @@ public class UserCrtl {
     @Transactional
     @RequestMapping("t")
     @Json
-    public Object first(Request request) {
+    public Object first(Request request, MultipartFile file, String cc) throws IOException {
+        System.out.println("cc:" + cc);
         Object attribute = request.getHttpSession().getAttribute("chenshun");
-        System.out.println(attribute);
+        System.out.println("attribute:" + attribute);
+        System.out.println("file.getName():" + file.getName());
+        System.out.println("file.getOriginalFilename():" + file.getOriginalFilename());
 //        System.out.println("testDao:" + testDao);
 //        Test test = testDao.selectTestByKey(18);
 //        test.setAge(111);

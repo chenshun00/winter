@@ -49,6 +49,7 @@ public class SimpleHttpRequest implements Request {
     //解析参数给route用
     public static SimpleHttpRequest buildRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         return SimpleHttpRequest.builder().ctx(ctx).httpRequest(httpRequest)
+                //todo 文件上传解析
                 .sessionId(SessionManager.createHttpSession())
                 .method(httpRequest.method().name())
                 .httpHeaders(parseHttpHeader(httpRequest))

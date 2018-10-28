@@ -33,8 +33,12 @@ public class SyncTransactionUtil {
      */
     private static final ThreadLocal<Boolean> currentTransactionActive = new NameThreadLocal<>("Current transaction iActive");
 
+    static {
+        currentTransactionActive.set(false);
+    }
+
     public static boolean isSynchronizationActive() {
-        return (currentTransactionActive.get() != null);
+        return (currentTransactionActive.get());
     }
 
     public static boolean isReadOnlyTransaction() {

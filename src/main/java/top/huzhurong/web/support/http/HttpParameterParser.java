@@ -1,12 +1,11 @@
 package top.huzhurong.web.support.http;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpContent;
+import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.*;
-import io.netty.util.CharsetUtil;
 import top.huzhurong.web.support.impl.Response;
 
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.util.Map;
  * @since 2018/9/22
  */
 public class HttpParameterParser {
-
     private static final HttpDataFactory factory = new DefaultHttpDataFactory(true);
     private Map<String, Object> NULL = null;
     private HttpPostRequestDecoder decoder;
@@ -40,7 +38,7 @@ public class HttpParameterParser {
         return parseParams;
     }
 
-    public Map<String, Object> parsetPostParams(ChannelHandlerContext ctx, HttpRequest httpRequest, Response response) {
+    public Map<String, Object> parsetPostParams(ChannelHandlerContext ctx, FullHttpRequest httpRequest, Response response) {
         Map<String, Object> parseParams = new HashMap<>();
 
         try {
@@ -52,15 +50,12 @@ public class HttpParameterParser {
         }
 
         try {
-            if (httpRequest instanceof HttpContent) {
-                decoder.offer((HttpContent) httpRequest);
-            }
+            decoder.offer(httpRequest);
         } catch (HttpPostRequestDecoder.ErrorDataDecoderException e1) {
             e1.printStackTrace();
             response.sendError(HttpResponseStatus.BAD_REQUEST, "can't decode post request");
             return NULL;
         }
-
         readHttpDataChunkByChunk(ctx, parseParams);
         reset(httpRequest);
         return parseParams;
@@ -68,18 +63,21 @@ public class HttpParameterParser {
 
 
     private void readHttpDataChunkByChunk(ChannelHandlerContext ctx, Map<String, Object> parseParams) {
-        //decoder.isMultipart();
+        //文件上传
         if (decoder.isMultipart()) {
             try {
                 while (decoder.hasNext()) {
                     InterfaceHttpData data = decoder.next();
                     if (data != null) {
-                        writeHttpData(data, parseParams);
-                        data.release();
+                        try {
+                            writeHttpData(data, parseParams);
+                        } finally {
+                            data.release();
+                        }
                     }
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (Exception ignore) {
+
             }
         } else {
             List<InterfaceHttpData> bodyHttpData = decoder.getBodyHttpDatas();
@@ -92,8 +90,7 @@ public class HttpParameterParser {
             if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
                 FileUpload fileUpload = (FileUpload) data;
                 if (fileUpload.isCompleted()) {
-                    String context = fileUpload.getString(CharsetUtil.UTF_8);
-                    parseParams.put(fileUpload.getFilename(), context);
+                    parseParams.put(fileUpload.getName(), fileUpload);
                 }
             } else if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                 Attribute attribute = (Attribute) data;
