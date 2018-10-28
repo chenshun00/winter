@@ -25,7 +25,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -101,9 +100,6 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
             }
             if (route.getMapping().contains("{") && route.getMapping().contains("}")) {
                 Map<String, String> map = pathMatcher.extractUriTemplateVariables(route.getMapping(), request.getPath() + "#" + httpRequest.method());
-                if (paramMap == null) {
-                    paramMap = new LinkedHashMap<>();
-                }
                 paramMap.putAll(map);
             }
             request.setParams(paramMap);
