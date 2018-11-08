@@ -21,4 +21,9 @@ public class HttpCookie {
     private boolean httpOnly = false;
     private long maxAge = Long.MIN_VALUE;
     private boolean secure = false;
+
+    public HttpCookie(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
 }

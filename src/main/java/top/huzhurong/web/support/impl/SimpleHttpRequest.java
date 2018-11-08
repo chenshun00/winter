@@ -49,7 +49,6 @@ public class SimpleHttpRequest implements Request {
     //解析参数给route用
     public static SimpleHttpRequest buildRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         return SimpleHttpRequest.builder().ctx(ctx).httpRequest(httpRequest)
-                //todo 文件上传解析
                 .sessionId(SessionManager.createHttpSession())
                 .method(httpRequest.method().name())
                 .httpHeaders(parseHttpHeader(httpRequest))
@@ -78,9 +77,7 @@ public class SimpleHttpRequest implements Request {
         } else {
             Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(value);
             cookies.forEach(cookie -> {
-                HttpCookie httpCookie = new HttpCookie();
-                httpCookie.setName(cookie.name());
-                httpCookie.setValue(cookie.value());
+                HttpCookie httpCookie = new HttpCookie(cookie.name(), cookie.value());
                 httpCookie.setHttpOnly(cookie.isHttpOnly());
                 httpCookie.setPath(cookie.path());
                 cookieList.add(httpCookie);
@@ -103,5 +100,15 @@ public class SimpleHttpRequest implements Request {
             this.sessionId = SessionManager.createHttpSession();
         }
         return SessionManager.getHttpSession(this.sessionId);
+    }
+
+    @Override
+    public HttpSession setHttpSession(HttpSession httpSession) {
+        return null;
+    }
+
+
+    public List<HttpCookie> getHttpCookie() {
+        return this.httpCookies;
     }
 }

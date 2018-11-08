@@ -36,4 +36,8 @@ public final class SessionManager {
         return sessionId;
     }
 
+    public Map<String, Object> getSessionValue(String cookieValue) {
+        return null;
+    }
+
 }
