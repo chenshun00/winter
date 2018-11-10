@@ -7,7 +7,6 @@ import top.huzhurong.web.annotation.Controller;
 import top.huzhurong.web.annotation.Json;
 import top.huzhurong.web.annotation.RequestMapping;
 import top.huzhurong.web.support.impl.Request;
-import top.huzhurong.web.support.upload.MultipartFile;
 import top.huzhurong.web.util.dao.TestDao;
 
 import java.io.IOException;
@@ -27,12 +26,13 @@ public class UserCrtl {
     @Transactional
     @RequestMapping("t")
     @Json
-    public Object first(Request request, MultipartFile file, String cc) throws IOException {
-        System.out.println("cc:" + cc);
-        Object attribute = request.getHttpSession().getAttribute("chenshun");
-        System.out.println("attribute:" + attribute);
-        System.out.println("file.getName():" + file.getName());
-        System.out.println("file.getOriginalFilename():" + file.getOriginalFilename());
+    public Object first(Request request, String cc) throws IOException {
+        request.getHttpSession().setAttribute("1", "我是陈顺");
+//        System.out.println("cc:" + cc);
+//        Object attribute = request.getHttpSession().getAttribute("chenshun");
+//        System.out.println("attribute:" + attribute);
+//        System.out.println("file.getName():" + file.getName());
+//        System.out.println("file.getOriginalFilename():" + file.getOriginalFilename());
 //        System.out.println("testDao:" + testDao);
 //        Test test = testDao.selectTestByKey(18);
 //        test.setAge(111);
@@ -40,9 +40,15 @@ public class UserCrtl {
 //        testDao.updateTestByKey(test);
 //        System.out.println(JSONObject.toJSONString(test));
 //        //int i = 10 / 0;
-
         return "1";
     }
 
-
+    @Transactional
+    @RequestMapping("zz")
+    @Json
+    public Object attr(Request request) throws IOException {
+        Object attribute = request.getHttpSession().getAttribute("1");
+        System.out.println(attribute);
+        return 2;
+    }
 }

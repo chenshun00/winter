@@ -1,6 +1,5 @@
 package top.huzhurong.web.support.http;
 
-import top.huzhurong.web.annotation.Filter;
 import top.huzhurong.web.support.Interceptor;
 import top.huzhurong.web.support.impl.Request;
 import top.huzhurong.web.support.impl.Response;
@@ -9,7 +8,8 @@ import top.huzhurong.web.support.impl.Response;
  * @author luobo.cs@raycloud.com
  * @since 2018/9/25
  */
-@Filter
+//@Filter
+//@Order(3)
 public class FirstInterceptor implements Interceptor {
 
     @Override

@@ -7,6 +7,7 @@ import java.util.Enumeration;
  * @since 2018/10/27
  */
 public interface HttpSession {
+
     long getCreationTime();
 
     String getId();

@@ -1,5 +1,6 @@
 package top.huzhurong.aop.advisor.transaction.manager;
 
+import lombok.NonNull;
 import top.huzhurong.aop.advisor.transaction.definition.TransactionStatus;
 
 /**
@@ -31,13 +32,18 @@ public class SyncTransactionUtil {
     /**
      * 事务是否激活
      */
-    private static final ThreadLocal<Boolean> currentTransactionActive = new NameThreadLocal<>("Current transaction iActive");
+    private final static ThreadLocal<Boolean> currentTransactionActive = new NameThreadLocal<>("Current transaction iActive");
 
     static {
         currentTransactionActive.set(false);
     }
 
     public static boolean isSynchronizationActive() {
+        if (currentTransactionActive.get() == null) {
+            currentTransactionActive.set(false);
+        }
+        System.out.println(currentTransactionActive + "====" + currentTransactionActive.get());
+
         return (currentTransactionActive.get());
     }
 
@@ -54,7 +60,7 @@ public class SyncTransactionUtil {
         currentTransactionActive.set(false);
     }
 
-    public static void setStatus(TransactionStatus status, Integer level, boolean active, boolean readOnly) {
+    public static void setStatus(@NonNull TransactionStatus status, @NonNull Integer level, @NonNull Boolean active, @NonNull Boolean readOnly) {
         statusThreadLocal.set(status);
         currentTransactionActive.set(active);
         currentTransactionIsolationLevel.set(level);

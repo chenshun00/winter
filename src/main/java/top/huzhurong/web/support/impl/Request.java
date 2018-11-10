@@ -18,7 +18,7 @@ public interface Request {
 
     HttpSession getHttpSession();
 
-    HttpSession setHttpSession(HttpSession httpSession);
+    void setHttpSession(HttpSession httpSession);
 
     List<HttpCookie> getHttpCookie();
 

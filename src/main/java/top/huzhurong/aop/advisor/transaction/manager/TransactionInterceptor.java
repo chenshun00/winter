@@ -28,24 +28,24 @@ public class TransactionInterceptor {
         this.transactionManager = transactionManager;
     }
 
-    public Object doTransaction(Invocation invocation, Object object) throws SQLException {
+    public Object doTransaction(Invocation invocation, Object object) throws SQLException, InvocationTargetException, IllegalAccessException {
         AbstractInvocation abstractInvocation = (AbstractInvocation) invocation;
         TransactionDefinition definition = TransactionAttrSource.getDefinition(abstractInvocation.getMethod());
         //获取事务
         TransactionStatus transaction = transactionManager.getTransaction(definition);
         log.info("成功获取事务");
-        Object invoke = null;
+        Object invoke;
         try {
             invoke = abstractInvocation.getMethod().invoke(object, abstractInvocation.getArgs());
             commitTransactionAfterReturning(transaction);
         } catch (InvocationTargetException e) {
             log.error("事务处理出现异常:{},开始进行事务回滚", e.getTargetException().getMessage());
             completeTransactionAfterThrowing(transaction);
-            e.printStackTrace();
+            throw e;
         } catch (Throwable e) {
             log.error("事务处理出现异常:{},开始进行事务回滚", e.getMessage());
             completeTransactionAfterThrowing(transaction);
-            e.printStackTrace();
+            throw e;
         } finally {
             cleanupTransactionInfo();
         }
@@ -58,8 +58,10 @@ public class TransactionInterceptor {
     }
 
     //移除绑定在线程上的事务属性
-    private void cleanupTransactionInfo() {
+    private void cleanupTransactionInfo() throws SQLException {
         SyncTransactionUtil.clear();
+        ConnectionManager connectionManager = ConnectionManager.get();
+        connectionManager.getConnection().close();
         ConnectionManager.remove();
     }
 

@@ -44,6 +44,7 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
     private HttpParameterParser httpParameterParser = new HttpParameterParser();
     private ControllerBean controllerBean;
 
+
     @Override
     public void setIocContainer(IocContainer iocContainer) {
         this.iocContainer = iocContainer;
@@ -69,93 +70,90 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         SimpleHttpRequest request = SimpleHttpRequest.buildRequest(ctx, httpRequest);
         Response response = SimpleHttpResponse.buildResponse(ctx, request, httpRequest);
 
-        try {
-            //精准匹配，url和route直接映射
-            Route route = httpMatcher.match(request);
-            if (route == null) {
-                Route blurryMatch = httpMatcher.blurryMatch(request);
-                if (blurryMatch != null) {
-                    ((SimpleHttpResponse) response).methodError(ctx, httpRequest);
-                } else {
-                    ((SimpleHttpResponse) response).notFound(ctx, httpRequest);
+        //精准匹配，url和route直接映射
+        Route route = httpMatcher.match(request);
+        if (route == null) {
+            Route blurryMatch = httpMatcher.blurryMatch(request);
+            if (blurryMatch != null) {
+                ((SimpleHttpResponse) response).methodError(ctx, httpRequest);
+            } else {
+                ((SimpleHttpResponse) response).notFound(ctx, httpRequest);
+            }
+            return;
+        }
+
+        Map<String, Object> paramMap;
+        if (request.getMethod().equalsIgnoreCase("GET")) {
+            paramMap = httpParameterParser.parseGetParams(httpRequest);
+        } else {
+            if (request.getMethod().equalsIgnoreCase("POST")
+                    || request.getMethod().equalsIgnoreCase("PUT")
+                    || request.getMethod().equalsIgnoreCase("DELETE")) {
+                paramMap = httpParameterParser.parsetPostParams(ctx, (FullHttpRequest) httpRequest, response);
+                if (paramMap == null) {
+                    return;
                 }
+            } else {
+                response.sendError(HttpResponseStatus.BAD_REQUEST, "不支持" + request.getMethod());
                 return;
             }
+        }
+        if (route.getMapping().contains("{") && route.getMapping().contains("}")) {
+            Map<String, String> map = pathMatcher.extractUriTemplateVariables(route.getMapping(), request.getPath() + "#" + httpRequest.method());
+            paramMap.putAll(map);
+        }
+        request.setParams(paramMap);
 
-            Map<String, Object> paramMap;
-            if (request.getMethod().equalsIgnoreCase("GET")) {
-                paramMap = httpParameterParser.parseGetParams(httpRequest);
-            } else {
-                if (request.getMethod().equalsIgnoreCase("POST")
-                        || request.getMethod().equalsIgnoreCase("PUT")
-                        || request.getMethod().equalsIgnoreCase("DELETE")) {
-                    paramMap = httpParameterParser.parsetPostParams(ctx, (FullHttpRequest) httpRequest, response);
-                    if (paramMap == null) {
-                        return;
-                    }
-                } else {
-                    response.sendError(HttpResponseStatus.BAD_REQUEST, "不支持" + request.getMethod());
+        //response
+        if (interceptors != null && interceptors.size() != 0) {
+            for (Interceptor interceptor : interceptors) {
+                if (!interceptor.preHandle(request, response)) {
+                    response.sendError(HttpResponseStatus.BAD_REQUEST);
                     return;
                 }
             }
-            if (route.getMapping().contains("{") && route.getMapping().contains("}")) {
-                Map<String, String> map = pathMatcher.extractUriTemplateVariables(route.getMapping(), request.getPath() + "#" + httpRequest.method());
-                paramMap.putAll(map);
-            }
-            request.setParams(paramMap);
+        }
 
-            //response
+        Method method = route.getMethod();
+        Object target = route.getTarget();
+
+        Map<String, Class<?>> routeParameters = route.getParameters();
+        Object[] params = new Object[routeParameters.size()];
+        Map<String, Object> parameters = request.getParams();
+        int i = 0;
+        for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
+            Class<?> aClass = routeParameters.get(entry.getKey());
+            params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
+        }
+
+        try {
+            Object invoke = method.invoke(target, params);
             if (interceptors != null && interceptors.size() != 0) {
                 for (Interceptor interceptor : interceptors) {
-                    if (!interceptor.preHandle(request, response)) {
-                        response.sendError(HttpResponseStatus.BAD_REQUEST);
-                        return;
-                    }
+                    interceptor.postHandle(request, response);
                 }
             }
 
-            Method method = route.getMethod();
-            Object target = route.getTarget();
-
-            Map<String, Class<?>> routeParameters = route.getParameters();
-            Object[] params = new Object[routeParameters.size()];
-            Map<String, Object> parameters = request.getParams();
-            int i = 0;
-            for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
-                Class<?> aClass = routeParameters.get(entry.getKey());
-                params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
+            if (route.isJson()) {
+                ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke);
             }
-
-            try {
-                Object invoke = method.invoke(target, params);
-                if (interceptors != null && interceptors.size() != 0) {
-                    for (Interceptor interceptor : interceptors) {
-                        interceptor.postHandle(request, response);
-                    }
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+            response.sendError(HttpResponseStatus.OK, ex.getMessage());
+        } catch (InvocationTargetException ex) {
+            Throwable targetException = ex.getTargetException();
+            targetException.printStackTrace();
+            if (this.controllerBean != null) {
+                Method exceptionHandle = this.controllerBean.getExceptionHandle(targetException.getClass());
+                if (exceptionHandle != null) {
+                    Object invoke = exceptionHandle.invoke(this.iocContainer.getBean("controllerAdvice"), targetException);
+                    response.sendError(HttpResponseStatus.OK, invoke);
                 }
-
-                if (route.isJson()) {
-                    ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke);
-                }
-            } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
-                response.sendError(HttpResponseStatus.OK, ex.getMessage());
-            } catch (InvocationTargetException ex) {
-                Throwable targetException = ex.getTargetException();
-                targetException.printStackTrace();
-                if (this.controllerBean != null) {
-                    Method exceptionHandle = this.controllerBean.getExceptionHandle(targetException.getClass());
-                    if (exceptionHandle != null) {
-                        Object invoke = exceptionHandle.invoke(this.iocContainer.getBean("controllerAdvice"), targetException);
-                        response.sendError(HttpResponseStatus.OK, invoke);
-                    }
-                } else {
-                    response.sendError(HttpResponseStatus.OK, targetException.getMessage());
-                }
+            } else {
+                response.sendError(HttpResponseStatus.OK, targetException.getMessage());
             }
-        } finally {
-            SessionManager.removeSession(request);
         }
+
     }
 
     private Object parseParam(Class<?> aClass, Object object, SimpleHttpRequest request, Response response) {

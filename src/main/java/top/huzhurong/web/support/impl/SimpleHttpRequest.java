@@ -49,7 +49,7 @@ public class SimpleHttpRequest implements Request {
     //解析参数给route用
     public static SimpleHttpRequest buildRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) {
         return SimpleHttpRequest.builder().ctx(ctx).httpRequest(httpRequest)
-                .sessionId(SessionManager.createHttpSession())
+//                .sessionId(SessionManager.createHttpSession())
                 .method(httpRequest.method().name())
                 .httpHeaders(parseHttpHeader(httpRequest))
                 .httpCookies(parseCookie(httpRequest))
@@ -97,14 +97,14 @@ public class SimpleHttpRequest implements Request {
     @Override
     public HttpSession getHttpSession() {
         if (this.sessionId == null) {
-            this.sessionId = SessionManager.createHttpSession();
+            this.sessionId = SessionManager.instance().createHttpSession(null);
         }
-        return SessionManager.getHttpSession(this.sessionId);
+        return SessionManager.instance().getHttpSession(this.sessionId);
     }
 
     @Override
-    public HttpSession setHttpSession(HttpSession httpSession) {
-        return null;
+    public void setHttpSession(HttpSession httpSession) {
+        this.sessionId = httpSession.getId();
     }
 
 

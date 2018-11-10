@@ -28,6 +28,7 @@ import top.huzhurong.web.support.http.HttpTradingCenter;
 import top.huzhurong.web.support.route.HttpMatcher;
 import top.huzhurong.web.support.route.HttpRouteBuilder;
 import top.huzhurong.web.support.route.Route;
+import top.huzhurong.web.support.session.SessionInterceptor;
 import top.huzhurong.xbatis.MybatisFactoryBean;
 import top.huzhurong.xbatis.SessionKit;
 import top.huzhurong.xbatis.SqlSessionBean;
@@ -82,6 +83,9 @@ public class Winter {
         info.add(new ClassInfo(NettyServer.class, StringUtils.handleClassName(NettyServer.class)));
         info.add(new ClassInfo(HttpServerHandler.class, StringUtils.handleClassName(HttpServerHandler.class)));
 
+
+        info.add(new ClassInfo(SessionInterceptor.class, StringUtils.handleClassName(SessionInterceptor.class)));
+
         AopConfigUtil.handleConfig(info, this.bootClass);
     }
 
@@ -92,7 +96,6 @@ public class Winter {
         atomicBoolean.compareAndSet(false, true);
         String name = bootClass.getPackage().getName();
         Set<ClassInfo> classInfoSet = scan(name);
-
         Set<ClassInfo> info = classInfoSet.stream().filter(this::find).collect(Collectors.toSet());
 
         prepare(info);
