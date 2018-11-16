@@ -4,8 +4,11 @@ import com.alibaba.druid.pool.DruidDataSource;
 import org.junit.Before;
 import org.junit.Test;
 import top.huzhurong.ioc.annotation.EnableConfiguration;
-import top.huzhurong.ioc.scan.test.AAA;
 import top.huzhurong.ioc.transaction.TestService;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author luobo.cs@raycloud.com
@@ -37,9 +40,12 @@ public class JdkProxyTest extends InitTest {
 
 
     @Test
-    public void jdkProxy() {
-        AAA testScan1 = (AAA) this.beanFactory.getBean("hhh");
-        testScan1.gg();
+    public void jdkProxy() throws SQLException {
+//        AAA testScan1 = (AAA) this.beanFactory.getBean("hhh");
+//        testScan1.gg();
+        DataSource datasource = (DataSource) this.beanFactory.getBean("datasource");
+        Connection connection = datasource.getConnection();
+        System.out.println(connection);
     }
 
 

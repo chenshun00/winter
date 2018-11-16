@@ -139,6 +139,7 @@ public class Winter {
                 }
             }
         }
+        //是这里的问题
         collect.stream().map(ClassInfo::getClassName).map(iocContainer::getBean).filter(this::needInject).forEach(this::inject);
         initBean(collect);
         for (ClassInfo classInfo : collect) {
@@ -259,14 +260,11 @@ public class Winter {
                     .forEach(ff -> {
                         Inject inject = ff.getAnnotation(Inject.class);
                         String value = inject.value();
-                        if (!value.equals("")) {
-                            Object bean = this.iocContainer.getBean(value);
-                            doInject(bean, ff, object);
-                        } else {
-                            String name = ff.getName();
-                            Object bean = this.iocContainer.getBean(name);
-                            doInject(bean, ff, object);
+                        if (value.equals("")) {
+                            value = ff.getName();
                         }
+                        Object bean = this.iocContainer.getBean(value);
+                        doInject(bean, ff, object);
                     });
             clazz = clazz.getSuperclass();
             declaredFields = clazz.getDeclaredFields();
