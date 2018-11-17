@@ -150,6 +150,7 @@ public class Winter {
             }
         }
 
+        collect.stream().map(ClassInfo::getClassName).map(iocContainer::getBean).filter(this::needInject).forEach(this::inject);
 
         List<String> list = this.iocContainer.beanNamesList();
         List<Route> routeList = new LinkedList<>();

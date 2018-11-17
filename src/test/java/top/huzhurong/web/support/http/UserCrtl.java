@@ -15,6 +15,7 @@ import top.huzhurong.web.util.dao.TestDao;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
@@ -52,10 +53,15 @@ public class UserCrtl implements IocContainerAware, InitAware {
     @Getter
     private IocContainer iocContainer;
 
-    //@Transactional
+    @Transactional
     @RequestMapping("zz")
     @Json
     public Object attr(Request request) throws IOException, SQLException {
+        DataSource dataSource = (DataSource) iocContainer.getBean("dataSource");
+        Connection connection = dataSource.getConnection();
+        connection.close();
+//        PreparedStatement preparedStatement = connection.prepareStatement("select 1");
+        //ResultSet resultSet = preparedStatement.executeQuery();
         //Object attribute = request.getHttpSession().getAttribute("1");
         //System.out.println(attribute);
         return 2;
