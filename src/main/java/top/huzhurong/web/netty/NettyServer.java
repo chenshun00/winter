@@ -5,6 +5,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import top.huzhurong.ioc.bean.IocContainer;
 import top.huzhurong.ioc.bean.aware.Environment;
 import top.huzhurong.ioc.bean.aware.EnvironmentAware;
@@ -37,8 +38,8 @@ public class NettyServer implements Server, EnvironmentAware, IocContainerAware,
 
     @Override
     public void start() {
-        bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
+        bossGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("winter-http-"));
+        workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2, new DefaultThreadFactory("winter-work-io-"));
 
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup);

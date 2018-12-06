@@ -28,7 +28,6 @@ public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {
         this.ssl = ssl;
         this.httpServerHandler = httpServerHandler;
         this.enable = environment.getString("enableCors") != null;
-        System.out.println(this.enable);
         String origin = environment.getString("origin");
         this.corsConfig = CorsConfigBuilder.forOrigin(origin == null ? "*" : origin)
                 .maxAge(3600L).allowedRequestMethods(HttpMethod.GET, HttpMethod.POST).allowNullOrigin().build();
