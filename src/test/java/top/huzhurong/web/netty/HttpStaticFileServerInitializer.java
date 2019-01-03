@@ -11,7 +11,7 @@ import io.netty.handler.codec.http.cors.CorsConfigBuilder;
 import io.netty.handler.codec.http.cors.CorsHandler;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/22
  */
 public class HttpStaticFileServerInitializer extends ChannelInitializer<SocketChannel> {

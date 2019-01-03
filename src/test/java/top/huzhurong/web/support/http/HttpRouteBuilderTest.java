@@ -17,7 +17,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/20
  */
 public class HttpRouteBuilderTest {

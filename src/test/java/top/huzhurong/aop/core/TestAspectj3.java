@@ -7,7 +7,7 @@ import top.huzhurong.aop.annotation.Before;
 import top.huzhurong.aop.invocation.Invocation;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/27
  */
 @Aspectj

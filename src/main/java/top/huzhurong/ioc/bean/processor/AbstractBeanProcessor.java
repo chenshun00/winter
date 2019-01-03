@@ -8,7 +8,7 @@ import top.huzhurong.ioc.bean.aware.IocContainerAware;
 import java.util.List;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/9
  */
 public abstract class AbstractBeanProcessor implements BeanProcessor, IocContainerAware {

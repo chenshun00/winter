@@ -7,7 +7,7 @@ import top.huzhurong.ioc.scan.test.TestScan1;
 import top.huzhurong.ioc.transaction.TestService;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/13
  */
 @EnableConfiguration

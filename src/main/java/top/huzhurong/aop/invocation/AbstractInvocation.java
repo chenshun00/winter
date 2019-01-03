@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/27
  */
 public abstract class AbstractInvocation implements Invocation {

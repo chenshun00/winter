@@ -8,7 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/17
  */
 public class EnvironmentTest {

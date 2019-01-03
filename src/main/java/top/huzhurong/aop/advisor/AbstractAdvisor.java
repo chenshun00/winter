@@ -6,7 +6,7 @@ import top.huzhurong.aop.invocation.Invocation;
 import java.lang.reflect.Method;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/3
  */
 public abstract class AbstractAdvisor implements MethodInterceptor {

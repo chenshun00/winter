@@ -14,7 +14,7 @@ import top.huzhurong.ioc.bean.aware.IocContainerAware;
 /**
  * 事务增强器
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/29
  */
 public class TransactionAdvisor extends AbstractAdvisor implements MethodInterceptor, IocContainerAware, InitAware {

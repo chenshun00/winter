@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 /**
  * init ioc container
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/8
  */
 @Slf4j

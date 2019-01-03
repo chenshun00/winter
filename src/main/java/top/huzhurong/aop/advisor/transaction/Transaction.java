@@ -5,7 +5,7 @@ import top.huzhurong.aop.advisor.transaction.manager.ConnectionManager;
 /**
  * 事务
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/29
  */
 public class Transaction {

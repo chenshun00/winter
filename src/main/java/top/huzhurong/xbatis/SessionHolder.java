@@ -3,7 +3,7 @@ package top.huzhurong.xbatis;
 import org.apache.ibatis.session.SqlSession;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/10/7
  */
 public class SessionHolder {

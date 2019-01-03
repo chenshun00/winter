@@ -1,7 +1,7 @@
 package top.huzhurong.ioc.scan.test;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/12
  */
 public interface AAA {

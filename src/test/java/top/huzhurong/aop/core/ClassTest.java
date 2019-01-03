@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/28
  */
 public class ClassTest {

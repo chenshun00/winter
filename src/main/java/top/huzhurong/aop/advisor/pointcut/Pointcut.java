@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 /**
  * 切点匹配
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/3
  */
 public interface Pointcut {

@@ -1,7 +1,7 @@
 package top.huzhurong.event;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/12/6
  */
 public interface EventListener {

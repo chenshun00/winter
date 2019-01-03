@@ -20,7 +20,7 @@ import java.sql.Statement;
 /**
  * 事务管理，暂时不考虑传播行为，后期会加入
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/31
  */
 @Slf4j

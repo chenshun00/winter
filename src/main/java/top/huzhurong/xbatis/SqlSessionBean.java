@@ -14,7 +14,7 @@ import java.util.Map;
 import static java.lang.reflect.Proxy.newProxyInstance;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/10/6
  */
 @Slf4j

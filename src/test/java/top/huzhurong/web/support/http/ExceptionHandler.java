@@ -4,7 +4,7 @@ import top.huzhurong.web.annotation.ControllerAdvice;
 import top.huzhurong.web.annotation.Exceptional;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/24
  */
 @ControllerAdvice

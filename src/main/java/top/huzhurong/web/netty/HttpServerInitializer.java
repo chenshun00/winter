@@ -13,7 +13,7 @@ import io.netty.handler.ssl.SslContext;
 import top.huzhurong.ioc.bean.aware.Environment;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/19
  */
 public class HttpServerInitializer extends ChannelInitializer<SocketChannel> {

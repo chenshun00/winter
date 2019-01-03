@@ -1,7 +1,7 @@
 package top.huzhurong.aop.core;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/26
  */
 public class Bin {

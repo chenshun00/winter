@@ -1,7 +1,7 @@
 package top.huzhurong.aop.advisor.transaction.manager;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/29
  */
 public class NameThreadLocal<T> extends ThreadLocal<T> {

@@ -10,7 +10,7 @@ import top.huzhurong.ioc.bean.aware.EnvironmentAware;
 import javax.sql.DataSource;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/16
  */
 @Configuration

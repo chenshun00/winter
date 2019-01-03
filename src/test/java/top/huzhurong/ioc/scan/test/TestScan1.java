@@ -5,7 +5,7 @@ import top.huzhurong.ioc.annotation.Inject;
 import top.huzhurong.ioc.bean.aware.InitAware;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/8
  */
 @Bean("hhh")

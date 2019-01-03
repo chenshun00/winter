@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 后置注解
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/26
  */
 @Retention(RetentionPolicy.RUNTIME)

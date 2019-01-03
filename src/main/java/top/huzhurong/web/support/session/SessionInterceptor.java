@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * session 过期策略
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/11/8
  */
 @Filter(order = 1)

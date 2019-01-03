@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/9
  */
 public class TransactionBeanProcessor extends AbstractBeanProcessor implements BeanProcessor {

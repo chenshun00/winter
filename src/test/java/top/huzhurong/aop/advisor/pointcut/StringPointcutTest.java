@@ -11,7 +11,7 @@ import java.lang.reflect.Modifier;
 
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/4
  */
 public class StringPointcutTest {

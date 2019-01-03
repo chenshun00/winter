@@ -1,7 +1,7 @@
 package top.huzhurong.aop.advisor.pointcut;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/4
  */
 public class TestInfo {

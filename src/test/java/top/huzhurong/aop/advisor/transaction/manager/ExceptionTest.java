@@ -3,7 +3,7 @@ package top.huzhurong.aop.advisor.transaction.manager;
 import org.junit.Test;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/1
  */
 public class ExceptionTest {

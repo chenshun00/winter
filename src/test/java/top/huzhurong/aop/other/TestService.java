@@ -3,7 +3,7 @@ package top.huzhurong.aop.other;
 import top.huzhurong.aop.annotation.Transactional;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/2
  */
 public class TestService {

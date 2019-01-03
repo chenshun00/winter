@@ -9,7 +9,7 @@ import top.huzhurong.ioc.annotation.Inject;
 import java.util.Date;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/2
  */
 @Bean

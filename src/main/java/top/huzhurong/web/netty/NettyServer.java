@@ -16,7 +16,7 @@ import top.huzhurong.web.support.Server;
 /**
  * init netty basic info ,  listen xxx port default 9652;
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/19
  */
 public class NettyServer implements Server, EnvironmentAware, IocContainerAware, InitAware {

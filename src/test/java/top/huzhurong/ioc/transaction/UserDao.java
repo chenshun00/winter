@@ -7,7 +7,7 @@ import top.huzhurong.ioc.annotation.Bean;
 import java.sql.*;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/18
  */
 @Slf4j

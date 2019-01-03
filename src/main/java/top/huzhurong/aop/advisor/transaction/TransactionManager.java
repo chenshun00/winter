@@ -6,7 +6,7 @@ import top.huzhurong.aop.advisor.transaction.definition.TransactionStatus;
 import java.sql.SQLException;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/8/29
  */
 public interface TransactionManager {

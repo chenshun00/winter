@@ -3,7 +3,7 @@ package top.huzhurong.web.support.impl;
 import java.util.*;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/10/27
  */
 public class SimpleHttpSession implements HttpSession {

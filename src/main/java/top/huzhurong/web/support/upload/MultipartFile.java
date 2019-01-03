@@ -1,7 +1,7 @@
 package top.huzhurong.web.support.upload;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/10/28
  */
 public interface MultipartFile extends InputStreamSource {

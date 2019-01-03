@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
  * 匹配所有的方法 * * *(*.*)
  * 匹配first类下的所有方法 * *.first *(*.*)
  *
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/3
  */
 public class StringPointcut implements Pointcut {

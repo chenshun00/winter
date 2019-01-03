@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/10/7
  */
 public class SessionKit {

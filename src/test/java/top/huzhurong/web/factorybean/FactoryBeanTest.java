@@ -6,7 +6,7 @@ import top.huzhurong.ioc.bean.aware.InitAware;
 import top.huzhurong.web.support.http.User;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/10/4
  */
 @Bean

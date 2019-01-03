@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.util.Objects;
 
 /**
- * @author luobo.cs@raycloud.com
+ * @author chenshun00@gmail.com
  * @since 2018/9/1
  */
 public class ConnectionManager {
