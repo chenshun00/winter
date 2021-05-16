@@ -90,7 +90,7 @@ public class SimpleHttpRequest implements Request {
         return WebUtil.ip(this.ctx, this.httpRequest);
     }
 
-    public String getProtocal() {
+    public String getProtocol() {
         return this.httpRequest.protocolVersion().protocolName();
     }
 

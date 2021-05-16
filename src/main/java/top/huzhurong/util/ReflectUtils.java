@@ -20,7 +20,7 @@ public class ReflectUtils {
     }
 
 
-    public static Object methodInvoe(Method method, Object object, Object[] args) {
+    public static Object methodInvoke(Method method, Object object, Object[] args) {
         method.setAccessible(true);
         try {
             return method.invoke(object, args);
