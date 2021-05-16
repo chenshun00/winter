@@ -8,7 +8,7 @@ import java.util.Comparator;
  * @author chenshun00@gmail.com
  * @since 2018/9/7
  */
-public class OrderConparator implements Comparator<Object> {
+public class OrderComparator implements Comparator<Object> {
     @Override
     public int compare(Object aspectj1, Object aspectj2) {
         Order first = aspectj1.getClass().getAnnotation(Order.class);

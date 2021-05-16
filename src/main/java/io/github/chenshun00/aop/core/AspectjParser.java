@@ -34,7 +34,7 @@ public class AspectjParser {
      * @return advisor list
      */
     public static List<Advisor> parserAspectj(List<Object> aspectjList) {
-        aspectjList.sort(new OrderConparator());
+        aspectjList.sort(new OrderComparator());
         List<Advisor> advisorList = new LinkedList<>();
         aspectjList.forEach(as -> advisorList.addAll(parserAspectj(as.getClass(), as)));
         return advisorList;
