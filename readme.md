@@ -13,7 +13,7 @@
 #### 运行
 
 1、 添加sql到数据库 `mysql 5.7.22` 中
-2、 运行 `top.huzhurong.web.App` 即可
+2、 运行 `top.github.web.App` 即可
 
 #### 特性
 

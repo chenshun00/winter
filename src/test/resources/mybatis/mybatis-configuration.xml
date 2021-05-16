@@ -6,9 +6,9 @@
 
     <typeAliases>
         <!--bean-->
-        <typeAlias alias="Test" type="top.huzhurong.web.util.Test"/>
+        <typeAlias alias="Test" type="io.github.chenshun00.web.util.Test"/>
         <!--query-->
-        <typeAlias alias="TestQuery" type="top.huzhurong.web.util.query.TestQuery"/>
+        <typeAlias alias="TestQuery" type="io.github.chenshun00.web.util.query.TestQuery"/>
     </typeAliases>
     <mappers>
         <mapper resource="mapper/test.xml"/>
