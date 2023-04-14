@@ -1,9 +1,7 @@
 package io.github.chenshun00.web.support.http;
 
+import com.alibaba.fastjson.JSONObject;
 import io.github.chenshun00.aop.annotation.Transactional;
-import io.github.chenshun00.web.util.dao.TestDao;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import io.github.chenshun00.ioc.annotation.Inject;
 import io.github.chenshun00.ioc.bean.IocContainer;
 import io.github.chenshun00.ioc.bean.aware.InitAware;
@@ -12,6 +10,10 @@ import io.github.chenshun00.web.annotation.Controller;
 import io.github.chenshun00.web.annotation.Json;
 import io.github.chenshun00.web.annotation.RequestMapping;
 import io.github.chenshun00.web.support.impl.Request;
+import io.github.chenshun00.web.util.Test;
+import io.github.chenshun00.web.util.dao.TestDao;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -34,19 +36,13 @@ public class UserCrtl implements IocContainerAware, InitAware {
     @RequestMapping("t")
     @Json
     public Object first(Request request, String cc) throws IOException {
-        request.getHttpSession().setAttribute("1", "我是陈顺");
-//        System.out.println("cc:" + cc);
-//        Object attribute = request.getHttpSession().getAttribute("chenshun");
-//        System.out.println("attribute:" + attribute);
-//        System.out.println("file.getName():" + file.getName());
-//        System.out.println("file.getOriginalFilename():" + file.getOriginalFilename());
-//        System.out.println("testDao:" + testDao);
-//        Test test = testDao.selectTestByKey(18);
-//        test.setAge(111);
-//        test.setName("winter");
-//        testDao.updateTestByKey(test);
-//        System.out.println(JSONObject.toJSONString(test));
-//        //int i = 10 / 0;
+        System.out.println("testDao:" + testDao);
+        Test test = testDao.selectTestByKey(18);
+        test.setAge(111);
+        test.setName("winter");
+        testDao.updateTestByKey(test);
+        System.out.println(JSONObject.toJSONString(test));
+        //int i = 10 / 0;
         return "1";
     }
 

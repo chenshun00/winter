@@ -1,12 +1,5 @@
 package io.github.chenshun00.web.support.http;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.multipart.FileUpload;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import io.github.chenshun00.ioc.bean.IocContainer;
 import io.github.chenshun00.ioc.bean.aware.InitAware;
 import io.github.chenshun00.ioc.bean.aware.IocContainerAware;
@@ -20,6 +13,13 @@ import io.github.chenshun00.web.support.upload.MultipartFile;
 import io.github.chenshun00.web.support.upload.SimpleMultipartFile;
 import io.github.chenshun00.web.util.AntPathMatcher;
 import io.github.chenshun00.web.util.PathMatcher;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.multipart.FileUpload;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -136,6 +136,8 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
 
             if (route.isJson()) {
                 ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke);
+            } else {
+                ((SimpleHttpResponse) response).toClient(ctx, httpRequest, invoke.toString());
             }
         } catch (IllegalAccessException ex) {
             ex.printStackTrace();

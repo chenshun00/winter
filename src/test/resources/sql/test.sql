@@ -7,9 +7,9 @@ CREATE TABLE `test` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
-insert into test values(1,'chenshun00',22)
-insert into test values(2,'cc',22)
-insert into test values(18,'winter test',10)
+insert into test values(1,'chenshun00',22);
+insert into test values(2,'cc',22);
+insert into test values(18,'winter test',10);
 
 CREATE TABLE `user` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,

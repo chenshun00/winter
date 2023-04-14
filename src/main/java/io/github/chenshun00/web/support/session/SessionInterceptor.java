@@ -1,13 +1,13 @@
 package io.github.chenshun00.web.support.session;
 
 import io.github.chenshun00.aop.annotation.Order;
+import io.github.chenshun00.web.annotation.Filter;
+import io.github.chenshun00.web.support.Interceptor;
 import io.github.chenshun00.web.support.http.HttpCookie;
 import io.github.chenshun00.web.support.http.SessionManager;
 import io.github.chenshun00.web.support.impl.HttpSession;
 import io.github.chenshun00.web.support.impl.Request;
 import io.github.chenshun00.web.support.impl.Response;
-import io.github.chenshun00.web.annotation.Filter;
-import io.github.chenshun00.web.support.Interceptor;
 
 import java.util.List;
 
@@ -35,6 +35,10 @@ public class SessionInterceptor implements Interceptor {
         } else {
             //对应的cookie,根据cookie的值找到所有的属性，然后set到http session当中去
             session = httpCookie.getValue();
+            HttpSession httpSession = SessionManager.instance().getHttpSession(session);
+            if (httpSession == null) {
+                session = SessionManager.instance().createHttpSession(response);
+            }
         }
         HttpSession httpSession = SessionManager.instance().getHttpSession(session);
         request.setHttpSession(httpSession);

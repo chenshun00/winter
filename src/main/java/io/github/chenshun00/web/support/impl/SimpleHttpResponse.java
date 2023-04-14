@@ -137,14 +137,20 @@ public class SimpleHttpResponse implements Response {
         String json = JSONObject.toJSONString(Result.ofSuccess(object));
         ByteBuf byteBuf = Unpooled.copiedBuffer(json.getBytes(StandardCharsets.UTF_8));
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
-        response(ctx, request, response, byteBuf);
+        response(ctx, request, response, byteBuf, true);
+    }
+
+    public void toClient(ChannelHandlerContext ctx, HttpRequest request, String object) {
+        ByteBuf byteBuf = Unpooled.copiedBuffer(object.getBytes(StandardCharsets.UTF_8));
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
+        response(ctx, request, response, byteBuf, false);
     }
 
     public void serverError(ChannelHandlerContext ctx, HttpRequest request, Object object, HttpResponseStatus responseStatus) {
         String string = JSONObject.toJSONString(object);
         ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus, byteBuf);
-        response(ctx, request, response, byteBuf);
+        response(ctx, request, response, byteBuf, true);
     }
 
     public void methodError(ChannelHandlerContext ctx, HttpRequest request) {
@@ -152,7 +158,7 @@ public class SimpleHttpResponse implements Response {
         String string = JSONObject.toJSONString(failed);
         ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_ACCEPTABLE, byteBuf);
-        response(ctx, request, response, byteBuf);
+        response(ctx, request, response, byteBuf, true);
     }
 
     public void notFound(ChannelHandlerContext ctx, HttpRequest request) {
@@ -160,16 +166,20 @@ public class SimpleHttpResponse implements Response {
         String string = JSONObject.toJSONString(failed);
         ByteBuf byteBuf = Unpooled.copiedBuffer(string.getBytes(StandardCharsets.UTF_8));
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND, byteBuf);
-        response(ctx, request, response, byteBuf);
+        response(ctx, request, response, byteBuf, true);
     }
 
-    private void response(ChannelHandlerContext ctx, HttpRequest request, FullHttpResponse response, ByteBuf byteBuf) {
+    private void response(ChannelHandlerContext ctx, HttpRequest request, FullHttpResponse response, ByteBuf byteBuf, boolean json) {
 
         boolean close = request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE, true)
                 || request.protocolVersion().equals(HttpVersion.HTTP_1_0)
                 && !request.headers().contains(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE, true);
 
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE, JSON);
+        if (json) {
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, JSON);
+        } else {
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, HTML);
+        }
         if (!close) {
             response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, byteBuf.readableBytes());
         }
