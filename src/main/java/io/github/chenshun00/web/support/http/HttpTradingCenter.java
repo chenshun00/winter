@@ -15,7 +15,6 @@ import io.github.chenshun00.web.util.AntPathMatcher;
 import io.github.chenshun00.web.util.PathMatcher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.multipart.FileUpload;
 import lombok.Setter;
@@ -66,7 +65,7 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
      *
      * @param httpRequest http 请求
      */
-    public void handleRequest(ChannelHandlerContext ctx, HttpRequest httpRequest) throws InvocationTargetException, IllegalAccessException {
+    public void handleRequest(ChannelHandlerContext ctx, FullHttpRequest httpRequest) throws InvocationTargetException, IllegalAccessException {
         SimpleHttpRequest request = SimpleHttpRequest.buildRequest(ctx, httpRequest);
         Response response = SimpleHttpResponse.buildResponse(ctx, request, httpRequest);
 
@@ -86,10 +85,10 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         if (request.getMethod().equalsIgnoreCase("GET")) {
             paramMap = httpParameterParser.parseGetParams(httpRequest);
         } else {
-            if (request.getMethod().equalsIgnoreCase("POST")
-                    || request.getMethod().equalsIgnoreCase("PUT")
-                    || request.getMethod().equalsIgnoreCase("DELETE")) {
-                paramMap = httpParameterParser.parsetPostParams(ctx, (FullHttpRequest) httpRequest, response);
+            if (!route.isBody()) {
+                paramMap = httpParameterParser.parseGetParams(httpRequest);
+            } else if (request.getMethod().equalsIgnoreCase("POST") || request.getMethod().equalsIgnoreCase("PUT") || request.getMethod().equalsIgnoreCase("DELETE")) {
+                paramMap = httpParameterParser.parsetPostParams(ctx, httpRequest, response);
                 if (paramMap == null) {
                     return;
                 }
@@ -122,9 +121,7 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         Map<String, Object> parameters = request.getParams();
         int i = 0;
         for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
-            //todo 如果entry是一个bean对象，那么应该需要迭代进去
             Class<?> aClass = routeParameters.get(entry.getKey());
-
             params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
         }
 
@@ -213,9 +210,15 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
 
 
     private Object priai(Class<?> aClass, Object object) {
+        if (object == null) {
+            return null;
+        }
+        if (!(object instanceof String)) {
+            object = object.toString();
+        }
         Object param;
         if (aClass.isAssignableFrom(Integer.class)) {
-            param = Integer.parseInt((String) object);
+            param = Integer.parseInt(object.toString());
         } else if (aClass.isAssignableFrom(Byte.class)) {
             param = Byte.parseByte((String) object);
         } else if (aClass.isAssignableFrom(Short.class)) {

@@ -2,10 +2,7 @@ package io.github.chenshun00.web.support.route;
 
 import io.github.chenshun00.ioc.bean.processor.AopConfigUtil;
 import io.github.chenshun00.util.StringUtils;
-import io.github.chenshun00.web.annotation.Json;
-import io.github.chenshun00.web.annotation.PathVariable;
-import io.github.chenshun00.web.annotation.RequestMapping;
-import io.github.chenshun00.web.annotation.RequestParam;
+import io.github.chenshun00.web.annotation.*;
 import io.github.chenshun00.web.asm.AsmParameterNameDiscover;
 import io.github.chenshun00.web.asm.ParameterNameDiscoverer;
 import io.github.chenshun00.web.support.http.RequestMethod;
@@ -113,6 +110,9 @@ public class HttpRouteBuilder {
                                     } else if (parameters[i].isAnnotationPresent(PathVariable.class)) {
                                         PathVariable pathVariable = parameters[i].getAnnotation(PathVariable.class);
                                         nname = pathVariable.value();
+                                    } else if (parameters[i].isAnnotationPresent(Body.class)) {
+                                        nname = entry.getKey();
+                                        route.setBody(true);
                                     } else {
                                         nname = entry.getKey();
                                     }

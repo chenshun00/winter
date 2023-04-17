@@ -1,15 +1,16 @@
 package io.github.chenshun00.web.support.http;
 
+import com.alibaba.fastjson.JSONObject;
+import io.github.chenshun00.web.support.impl.Response;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.*;
-import io.github.chenshun00.web.support.impl.Response;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,23 +42,19 @@ public class HttpParameterParser {
     public Map<String, Object> parsetPostParams(ChannelHandlerContext ctx, FullHttpRequest httpRequest, Response response) {
         Map<String, Object> parseParams = new HashMap<>();
 
-        try {
-            decoder = new HttpPostRequestDecoder(factory, httpRequest);
-        } catch (HttpPostRequestDecoder.ErrorDataDecoderException e1) {
-            e1.printStackTrace();
-            response.sendError(HttpResponseStatus.BAD_REQUEST, "can't decode post request");
-            return NULL;
+        final String s = httpRequest.content().toString(StandardCharsets.UTF_8);
+        if (s != null && s.length() > 0) {
+            try {
+                final JSONObject jsonObject = JSONObject.parseObject(s);
+                parseParams.putAll(jsonObject.getInnerMap());
+            } catch (Exception e) {
+                throw new RuntimeException("不合理的json串,不支持json数组的形式.");
+            }
         }
-
-        try {
-            decoder.offer(httpRequest);
-        } catch (HttpPostRequestDecoder.ErrorDataDecoderException e1) {
-            e1.printStackTrace();
-            response.sendError(HttpResponseStatus.BAD_REQUEST, "can't decode post request");
-            return NULL;
+        final Map<String, Object> stringObjectMap = this.parseGetParams(httpRequest);
+        if (stringObjectMap != null && !stringObjectMap.isEmpty()) {
+            parseParams.putAll(stringObjectMap);
         }
-        readHttpDataChunkByChunk(ctx, parseParams);
-        reset(httpRequest);
         return parseParams;
     }
 

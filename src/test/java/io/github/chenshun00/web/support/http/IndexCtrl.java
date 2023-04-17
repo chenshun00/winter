@@ -1,6 +1,7 @@
 package io.github.chenshun00.web.support.http;
 
 import io.github.chenshun00.ioc.annotation.Inject;
+import io.github.chenshun00.web.annotation.Body;
 import io.github.chenshun00.web.annotation.Controller;
 import io.github.chenshun00.web.annotation.Json;
 import io.github.chenshun00.web.annotation.RequestMapping;
@@ -50,6 +51,13 @@ public class IndexCtrl {
     @Json
     @RequestMapping(value = "testAdd", method = RequestMethod.POST)
     public Result testAdd(Test test) {
+        final Integer add = testDao.addTest(test);
+        return Result.ofSuccess(add.equals(1));
+    }
+
+    @Json
+    @RequestMapping(value = "testJson", method = RequestMethod.POST)
+    public Result testBody(@Body Test test) {
         final Integer add = testDao.addTest(test);
         return Result.ofSuccess(add.equals(1));
     }
