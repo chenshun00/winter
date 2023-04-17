@@ -134,7 +134,7 @@ public class SimpleHttpResponse implements Response {
     }
 
     public void toClient(ChannelHandlerContext ctx, HttpRequest request, Object object) {
-        String json = JSONObject.toJSONString(Result.ofSuccess(object));
+        String json = JSONObject.toJSONString(object);
         ByteBuf byteBuf = Unpooled.copiedBuffer(json.getBytes(StandardCharsets.UTF_8));
         FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, byteBuf);
         response(ctx, request, response, byteBuf, true);

@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class HttpMatcher {
 
-    private PathMatcher pathMatcher = new AntPathMatcher();
+    private final PathMatcher pathMatcher = new AntPathMatcher();
 
     @Getter
     @Setter

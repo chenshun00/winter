@@ -1,12 +1,14 @@
 package io.github.chenshun00.ioc.bean.processor;
 
-import io.github.chenshun00.aop.invocation.ProxyFactory;
 import io.github.chenshun00.aop.advisor.Advisor;
 import io.github.chenshun00.aop.advisor.pointcut.TransactionPointcut;
 import io.github.chenshun00.aop.advisor.transaction.TransactionAdvisor;
 import io.github.chenshun00.aop.advisor.transaction.TransactionManager;
+import io.github.chenshun00.aop.annotation.Transactional;
+import io.github.chenshun00.aop.invocation.ProxyFactory;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,6 +34,24 @@ public class TransactionBeanProcessor extends AbstractBeanProcessor implements B
         }
     }
 
+    @Override
+    protected boolean isInfrastructure(Object object) {
+        final boolean annotationPresent = object.getClass().isAnnotationPresent(Transactional.class);
+        if (annotationPresent) {
+            return false;
+        }
+        for (Method declaredMethod : object.getClass().getDeclaredMethods()) {
+            if (declaredMethod.isSynthetic()) {
+                continue;
+            }
+            final boolean aPublic = Modifier.isPublic(declaredMethod.getModifiers());
+            if (!aPublic) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
 
     public TransactionAdvisor dealTransactionAdvisor(Object object) {
         TransactionManager bean = (TransactionManager) this.getIocContainer().getBean("jdbcTransactionManager");

@@ -1,6 +1,5 @@
 package io.github.chenshun00.web.support.route;
 
-import io.github.chenshun00.web.support.http.RequestMethod;
 import io.github.chenshun00.ioc.bean.processor.AopConfigUtil;
 import io.github.chenshun00.util.StringUtils;
 import io.github.chenshun00.web.annotation.Json;
@@ -9,6 +8,7 @@ import io.github.chenshun00.web.annotation.RequestMapping;
 import io.github.chenshun00.web.annotation.RequestParam;
 import io.github.chenshun00.web.asm.AsmParameterNameDiscover;
 import io.github.chenshun00.web.asm.ParameterNameDiscoverer;
+import io.github.chenshun00.web.support.http.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -39,7 +39,7 @@ public class HttpRouteBuilder {
         primitiveWrapperTypeMap.put("short", Short.class);
     }
 
-    private ParameterNameDiscoverer parameterNameDiscoverer = new AsmParameterNameDiscover();
+    private final ParameterNameDiscoverer parameterNameDiscoverer = new AsmParameterNameDiscover();
 
     /**
      * 基本类型靠parse，自定义类型，就只能反射set了
@@ -60,10 +60,13 @@ public class HttpRouteBuilder {
                     RequestMethod[] requestMethods = declaredAnnotation.method();
 
                     List<String> tags = new LinkedList<>();
+                    String parent = "";
 
-                    String parent = requestMapping.value();
-                    if (parent.trim().length() != 0 && !parent.startsWith("/")) {
-                        parent = "/" + parent;
+                    if (requestMapping != null) {
+                        parent = requestMapping.value();
+                        if (parent.trim().length() != 0 && !parent.startsWith("/")) {
+                            parent = "/" + parent;
+                        }
                     }
 
                     String child = declaredAnnotation.value();
@@ -76,6 +79,10 @@ public class HttpRouteBuilder {
                     }
 
                     String key = parent + child;
+                    if (!key.startsWith("/")) {
+                        key = "/" + key;
+                    }
+                    key = key.replaceAll("//", "/");
                     if (requestMethods.length == 0) {
                         tags.add((key + "#" + "post".toUpperCase()));
                         tags.add((key + "#" + "get".toUpperCase()));

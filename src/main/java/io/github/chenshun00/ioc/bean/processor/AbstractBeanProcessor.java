@@ -27,8 +27,7 @@ public abstract class AbstractBeanProcessor implements BeanProcessor, IocContain
 
 
     protected boolean isInfrastructure(Object object) {
-        return (object instanceof Advisor || object instanceof BeanProcessor || object instanceof IocContainer
-                || object instanceof BeanFactory);
+        return (object instanceof Advisor || object instanceof BeanProcessor || object instanceof BeanFactory);
     }
 
     protected List<String> beanNameForType() {

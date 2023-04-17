@@ -122,7 +122,9 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
         Map<String, Object> parameters = request.getParams();
         int i = 0;
         for (Map.Entry<String, Class<?>> entry : routeParameters.entrySet()) {
+            //todo 如果entry是一个bean对象，那么应该需要迭代进去
             Class<?> aClass = routeParameters.get(entry.getKey());
+
             params[i++] = parseParam(aClass, parameters.get(entry.getKey()), request, response);
         }
 
@@ -150,10 +152,15 @@ public class HttpTradingCenter implements IocContainerAware, InitAware {
                 if (exceptionHandle != null) {
                     Object invoke = exceptionHandle.invoke(this.iocContainer.getBean("controllerAdvice"), targetException);
                     response.sendError(HttpResponseStatus.OK, invoke);
+                } else {
+                    response.sendError(HttpResponseStatus.OK, targetException.getMessage());
                 }
             } else {
                 response.sendError(HttpResponseStatus.OK, targetException.getMessage());
             }
+        } catch (Exception e) {
+            log.error("出现异常", e);
+            response.sendError(HttpResponseStatus.OK, e.getMessage());
         }
 
     }

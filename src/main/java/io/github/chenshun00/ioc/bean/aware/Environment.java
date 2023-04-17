@@ -18,7 +18,7 @@ public class Environment {
     private final static String MYBATIS_CONFIG = "mybatis-config";
     public static String MYBATIS = null;
 
-    private static Map<String, Object> context = new HashMap<>();
+    private static final Map<String, String> context = new HashMap<>();
 
     static {
         try {
@@ -30,13 +30,16 @@ public class Environment {
             set.forEach(key -> context.put(key, properties.getProperty(key)));
             String profile = (String) context.get("profiles.active");
             if (profile != null && profile.length() != 0) {
-                Environment.class.getClassLoader().getResourceAsStream("application-" + profile + ".properties");
-                Properties pp = new Properties();
-                pp.stringPropertyNames().forEach(key -> context.put(key, properties.getProperty(key)));
+                final InputStream profileInputStream = Environment.class.getClassLoader().getResourceAsStream("application-" + profile + ".properties");
+                if (profileInputStream != null) {
+                    Properties pp = new Properties();
+                    pp.load(profileInputStream);
+                    pp.stringPropertyNames().forEach(key -> context.put(key, pp.getProperty(key)));
+                }
             }
 
             if (context.get(MYBATIS_CONFIG) != null) {
-                MYBATIS = (String) context.get(MYBATIS_CONFIG);
+                MYBATIS = context.get(MYBATIS_CONFIG);
             } else {
                 MYBATIS = "";
             }
@@ -53,12 +56,12 @@ public class Environment {
         return (String) Environment.context.get(key);
     }
 
-    public Object getStringOrDef(String key, Object def) {
+    public Object getStringOrDef(String key, String def) {
         return Environment.context.getOrDefault(key, def);
     }
 
 
-    public Integer getInteger(String key) {
-        return (Integer) Environment.context.get(key);
+    public Integer getIntegerOrDef(String key, Integer def) {
+        return Integer.parseInt(Environment.context.getOrDefault(key, def.toString()));
     }
 }

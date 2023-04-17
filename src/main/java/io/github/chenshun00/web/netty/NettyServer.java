@@ -32,7 +32,7 @@ public class NettyServer implements Server, EnvironmentAware, IocContainerAware,
 
     @Override
     public Server beforeStart() {
-        POST = (int) environment.getStringOrDef("port", POST);
+        POST = environment.getIntegerOrDef("server.port", POST);
         return this;
     }
 
